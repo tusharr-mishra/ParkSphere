@@ -1,0 +1,210 @@
+<% layout('layouts/boilerplate') %>
+
+<div class="container py-4">
+  <!-- Back Button & Breadcrumbs -->
+  <div class="mb-3">
+    <a href="/parking" class="text-muted text-decoration-none small">
+      <i class="bi bi-chevron-left me-1"></i> Back to Facilities
+    </a>
+  </div>
+
+  <div class="row g-4">
+    <!-- Facility Info Column -->
+    <div class="col-lg-7">
+      <div class="card card-custom overflow-hidden mb-4">
+        <img src="<%= facility.image %>" class="w-100" alt="<%= facility.name %>" style="max-height: 320px; object-fit: cover;">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h2 class="fw-bold mb-0 text-white"><%= facility.name %></h2>
+            <div class="text-end">
+              <span class="fs-3 fw-bold text-primary">$<%= facility.pricing.hourlyRate.toFixed(2) %></span>
+              <span class="text-muted small">/hr</span>
+            </div>
+          </div>
+
+          <p class="text-muted mb-3">
+            <i class="bi bi-geo-alt-fill text-danger me-1"></i> <%= facility.address %>, <%= facility.city %>
+          </p>
+
+          <div class="d-flex flex-wrap gap-2 mb-4">
+            <% for (let a of facility.amenities) { %>
+              <span class="badge bg-secondary p-2"><i class="bi bi-check2 me-1"></i> <%= a.replace('_', ' ') %></span>
+            <% } %>
+            <span class="badge bg-secondary p-2"><i class="bi bi-clock me-1"></i> <%= facility.operatingHours.open %> to <%= facility.operatingHours.close %></span>
+          </div>
+
+          <!-- Interactive Slot Map Visualizer -->
+          <h5 class="fw-bold text-white mb-2">Facility Bays & Inventory</h5>
+          <p class="text-muted small mb-3">Click on any open bay (green) to select it for your reservation.</p>
+
+          <div class="row g-2 p-3 rounded-3" style="background-color: #0b1329; border: 1px solid var(--border-subtle); max-height: 280px; overflow-y: auto;">
+            <% for (let slot of slots) { %>
+              <div class="col-4 col-sm-3 col-md-2 text-center">
+                <% if (slot.status === 'AVAILABLE') { %>
+                  <div class="slot-badge-available" onclick="selectSlot('<%= slot._id %>', '<%= slot.slotNumber %>', '<%= slot.slotType %>', <%= slot.isEV %>)">
+                    <div class="fw-bold"><%= slot.slotNumber %></div>
+                    <div class="small" style="font-size: 0.65rem;"><%= slot.slotType %> <%= slot.isEV ? '⚡' : '' %></div>
+                  </div>
+                <% } else if (slot.status === 'OCCUPIED') { %>
+                  <div class="slot-badge-occupied">
+                    <div class="fw-bold"><%= slot.slotNumber %></div>
+                    <div class="small" style="font-size: 0.65rem;">OCCUPIED</div>
+                  </div>
+                <% } else { %>
+                  <div class="slot-badge-maintenance">
+                    <div class="fw-bold"><%= slot.slotNumber %></div>
+                    <div class="small" style="font-size: 0.65rem;">MAINT</div>
+                  </div>
+                <% } %>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reviews Section -->
+      <div class="card card-custom p-4">
+        <h5 class="fw-bold text-white mb-3"><i class="bi bi-star-fill text-warning me-2"></i>Customer Reviews</h5>
+        <% if (reviews.length === 0) { %>
+          <p class="text-muted small mb-0">No reviews written yet for this facility. Book and complete your stay to share your experience!</p>
+        <% } else { %>
+          <div class="d-flex flex-column gap-3">
+            <% for (let r of reviews) { %>
+              <div class="border-bottom border-secondary pb-2">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="fw-semibold text-white"><%= r.user ? r.user.name : 'Customer' %></span>
+                  <span class="text-warning small"><%= '★'.repeat(r.rating) %><%= '☆'.repeat(5 - r.rating) %></span>
+                </div>
+                <p class="text-muted small mb-0"><%= r.comment %></p>
+              </div>
+            <% } %>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Booking Form Column -->
+    <div class="col-lg-5">
+      <div class="card card-custom p-4 sticky-top shadow" style="top: 85px;">
+        <h4 class="fw-bold text-white mb-3">Reserve a Bay</h4>
+
+        <% if (!currentUser) { %>
+          <div class="alert alert-warning small mb-0">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            Please <a href="/login" class="alert-link">sign in</a> to reserve a parking slot.
+          </div>
+        <% } else { %>
+          <form action="/reservations" method="POST" id="bookingForm">
+            <input type="hidden" name="facilityId" value="<%= facility._id %>">
+
+            <!-- Selected Slot Display -->
+            <div class="mb-3">
+              <label class="form-label text-muted small fw-semibold">Target Slot</label>
+              <select name="slotId" id="slotSelect" class="form-select" required>
+                <option value="" disabled selected>-- Choose from Bay Map or Select Below --</option>
+                <% for (let s of slots.filter(x => x.status === 'AVAILABLE')) { %>
+                  <option value="<%= s._id %>">Slot <%= s.slotNumber %> (<%= s.slotType %><%= s.isEV ? ' | EV' : '' %>)</option>
+                <% } %>
+              </select>
+            </div>
+
+            <!-- Vehicle Selection -->
+            <div class="mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="form-label text-muted small fw-semibold mb-0">Vehicle</label>
+                <a href="/customer/vehicles" class="small text-primary text-decoration-none">+ Add Vehicle</a>
+              </div>
+              <% if (userVehicles.length === 0) { %>
+                <div class="alert alert-warning small p-2">
+                  No vehicles registered yet. <a href="/customer/vehicles" class="fw-bold text-decoration-none">Click here to register your vehicle plate</a> before reserving.
+                </div>
+              <% } else { %>
+                <select name="vehicleId" class="form-select" required>
+                  <% for (let v of userVehicles) { %>
+                    <option value="<%= v._id %>"><%= v.registrationNumber %> - <%= v.make %> <%= v.model %> (<%= v.vehicleType %>)</option>
+                  <% } %>
+                </select>
+              <% } %>
+            </div>
+
+            <!-- Date Interval Selectors -->
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label text-muted small fw-semibold">Start Time</label>
+                <input type="datetime-local" name="startTime" id="startTimeInput" class="form-control form-control-sm" required onchange="calculateEstimatedTotal()">
+              </div>
+              <div class="col-6">
+                <label class="form-label text-muted small fw-semibold">End Time</label>
+                <input type="datetime-local" name="endTime" id="endTimeInput" class="form-control form-control-sm" required onchange="calculateEstimatedTotal()">
+              </div>
+            </div>
+
+            <!-- Estimated Pricing Calculator -->
+            <div class="p-3 rounded-3 mb-4" style="background-color: #0b1329; border: 1px solid var(--border-subtle);">
+              <div class="d-flex justify-content-between align-items-center text-muted small mb-1">
+                <span>Rate</span>
+                <span>$<%= facility.pricing.hourlyRate.toFixed(2) %> / hr</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center text-muted small mb-2">
+                <span>Estimated Duration</span>
+                <span id="estimatedDuration">-- hrs</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center border-top border-secondary pt-2">
+                <span class="fw-bold text-white">Estimated Total:</span>
+                <span class="fs-5 fw-bold text-success" id="estimatedTotal">$0.00</span>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" <%= userVehicles.length === 0 ? 'disabled' : '' %>>
+              <i class="bi bi-shield-check me-1"></i> Confirm & Reserve Bay
+            </button>
+          </form>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Populate Slot Select dropdown when a bay is clicked in the visualizer
+  function selectSlot(slotId, slotNumber, slotType, isEV) {
+    const slotSelect = document.getElementById('slotSelect');
+    if (slotSelect) {
+      slotSelect.value = slotId;
+    }
+  }
+
+  // Pre-fill default booking start time (now) and end time (2 hours later)
+  window.addEventListener('DOMContentLoaded', () => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    const startStr = now.toISOString().slice(0, 16);
+
+    const later = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+    const endStr = later.toISOString().slice(0, 16);
+
+    const startInput = document.getElementById('startTimeInput');
+    const endInput = document.getElementById('endTimeInput');
+
+    if (startInput && !startInput.value) startInput.value = startStr;
+    if (endInput && !endInput.value) endInput.value = endStr;
+
+    calculateEstimatedTotal();
+  });
+
+  function calculateEstimatedTotal() {
+    const startVal = document.getElementById('startTimeInput')?.value;
+    const endVal = document.getElementById('endTimeInput')?.value;
+    const hourlyRate = <%= facility.pricing.hourlyRate %>;
+
+    if (startVal && endVal) {
+      const s = new Date(startVal);
+      const e = new Date(endVal);
+      if (e > s) {
+        const hours = Math.max(1, Math.ceil((e - s) / (1000 * 60 * 60)));
+        document.getElementById('estimatedDuration').innerText = hours + ' hr' + (hours > 1 ? 's' : '');
+        document.getElementById('estimatedTotal').innerText = '$' + (hours * hourlyRate).toFixed(2);
+      }
+    }
+  }
+</script>

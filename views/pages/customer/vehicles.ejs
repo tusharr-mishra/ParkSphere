@@ -1,0 +1,96 @@
+<% layout('layouts/boilerplate') %>
+
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">My Registered Vehicles</h2>
+      <p class="text-muted small mb-0">Register license plates and EV compatibility to unlock 1-click slot booking</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Add Vehicle Form Column -->
+    <div class="col-lg-4">
+      <div class="card card-custom p-4 shadow-sm">
+        <h5 class="fw-bold text-white mb-3"><i class="bi bi-plus-circle-fill text-primary me-2"></i>Register Vehicle</h5>
+
+        <form action="/customer/vehicles" method="POST">
+          <div class="mb-3">
+            <label class="form-label text-muted small fw-semibold">License Plate / Registration</label>
+            <input type="text" name="registrationNumber" class="form-control" placeholder="e.g. 7XYZ890" style="text-transform: uppercase;" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label text-muted small fw-semibold">Vehicle Type</label>
+            <select name="vehicleType" class="form-select">
+              <option value="SEDAN" selected>Sedan</option>
+              <option value="COMPACT">Compact / Hatchback</option>
+              <option value="SUV">SUV / Truck</option>
+              <option value="TWO_WHEELER">Two Wheeler / Motorcycle</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label text-muted small fw-semibold">Make & Model</label>
+            <div class="row g-2">
+              <div class="col-6">
+                <input type="text" name="make" class="form-control" placeholder="Tesla / Toyota">
+              </div>
+              <div class="col-6">
+                <input type="text" name="model" class="form-control" placeholder="Model 3 / Camry">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-check form-switch mb-4">
+            <input class="form-check-input" type="checkbox" name="isEV" id="evSwitch">
+            <label class="form-check-label text-muted small" for="evSwitch">Electric Vehicle (EV) Compatible</label>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+            Save Vehicle
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Vehicles List Column -->
+    <div class="col-lg-8">
+      <% if (vehicles.length === 0) { %>
+        <div class="card card-custom p-5 text-center">
+          <div class="mb-3 text-muted fs-1"><i class="bi bi-car-front"></i></div>
+          <h5 class="fw-bold">No Vehicles Registered</h5>
+          <p class="text-muted small">Register your first vehicle using the form on the left to start reserving parking spots.</p>
+        </div>
+      <% } else { %>
+        <div class="row g-3">
+          <% for (let v of vehicles) { %>
+            <div class="col-md-6">
+              <div class="card card-custom p-4 h-100 shadow-sm">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <span class="fs-4 fw-bold text-white"><%= v.registrationNumber %></span>
+                  <% if (v.isEV) { %>
+                    <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">⚡ EV</span>
+                  <% } %>
+                </div>
+
+                <div class="text-muted small mb-3">
+                  <%= v.make %> <%= v.model %> • <%= v.vehicleType %>
+                </div>
+
+                <div class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top border-secondary">
+                  <span class="badge bg-secondary"><i class="bi bi-check-circle me-1"></i> Verified</span>
+                  <form action="/customer/vehicles/<%= v._id %>/delete" method="POST" onsubmit="return confirm('Remove vehicle?')">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>

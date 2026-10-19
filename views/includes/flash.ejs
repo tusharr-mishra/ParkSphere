@@ -1,0 +1,23 @@
+<% if (success && success.length) { %>
+  <div class="alert alert-success alert-dismissible fade show" role="alert" style="background-color: rgba(16, 185, 129, 0.2); border-color: #10b981; color: #34d399;">
+    <i class="bi bi-check-circle-fill me-2"></i>
+    <strong>Success:</strong> <%= success %>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
+
+<% if (error && error.length) { %>
+  <div class="alert alert-danger alert-dismissible fade show" role="alert" style="background-color: rgba(239, 68, 68, 0.2); border-color: #ef4444; color: #f87171;">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <strong>Error:</strong> <%= error %>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
+
+<% if (typeof info !== 'undefined' && info && info.length) { %>
+  <div class="alert alert-info alert-dismissible fade show" role="alert" style="background-color: rgba(59, 130, 246, 0.2); border-color: #3b82f6; color: #60a5fa;">
+    <i class="bi bi-info-circle-fill me-2"></i>
+    <%= info %>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
