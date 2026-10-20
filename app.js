@@ -34,12 +34,56 @@ app.locals.error = [];
 // Database configuration (Atlas Cloud or local fallback)
 const DB_URL = process.env.ATLASDB_URL || process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/parksphere';
 
+// Auto-seed initial parking facilities if the database collection is empty
+const seedInitialDataIfEmpty = async (force = false) => {
+  try {
+    const Facility = require('./models/facility');
+    const Slot = require('./models/slot');
+    const facilityCount = await Facility.countDocuments();
+
+    if (facilityCount === 0 || force) {
+      console.log('[AutoSeed] Facility collection is empty. Populating catalog with smart parking facilities...');
+      const { facilitiesData } = require('./init/data');
+
+      for (const fData of facilitiesData) {
+        const facility = await Facility.create(fData);
+        const slotTypes = ['COMPACT', 'SEDAN', 'SEDAN', 'SUV', 'TWO_WHEELER'];
+        const slotsToInsert = [];
+
+        for (let i = 1; i <= (facility.totalSlots || 30); i++) {
+          const slotNumber = `${String.fromCharCode(65 + Math.floor((i - 1) / 10))}-${String(((i - 1) % 10) + 1).padStart(2, '0')}`;
+          const slotType = slotTypes[i % slotTypes.length];
+          const isEV = i % 4 === 0;
+
+          slotsToInsert.push({
+            facility: facility._id,
+            slotNumber,
+            slotType,
+            isEV,
+            status: 'AVAILABLE',
+          });
+        }
+
+        await Slot.insertMany(slotsToInsert);
+      }
+
+      const totalSlots = await Slot.countDocuments();
+      console.log(`[AutoSeed] Success: Populated ${facilitiesData.length} facilities and ${totalSlots} bays!`);
+    } else {
+      console.log(`[AutoSeed] Database verified: ${facilityCount} parking facilities ready.`);
+    }
+  } catch (err) {
+    console.error('[AutoSeed] Error during seeding:', err.message);
+  }
+};
+
 // Connect to MongoDB with automatic local fallback
 const dbPromise = mongoose
   .connect(DB_URL, { serverSelectionTimeoutMS: 4000 })
-  .then(() => {
+  .then(async () => {
     const dbTarget = DB_URL.includes('mongodb+srv') ? 'MongoDB Atlas (Online Cloud)' : 'MongoDB Local';
     console.log(`Database connected: ${dbTarget}`);
+    await seedInitialDataIfEmpty();
     return mongoose.connection.getClient();
   })
   .catch(async (err) => {
@@ -47,6 +91,7 @@ const dbPromise = mongoose
       console.warn(`Atlas connection failed (${err.message}). Falling back to local MongoDB...`);
       await mongoose.connect('mongodb://127.0.0.1:27017/parksphere');
       console.log('Connected to Local MongoDB fallback');
+      await seedInitialDataIfEmpty();
       return mongoose.connection.getClient();
     }
     console.error('Database connection error:', err.message);
@@ -138,6 +183,45 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
   });
+});
+
+// Database catalog seed endpoint (auto or manual sync)
+app.get('/seed', async (req, res) => {
+  try {
+    const Facility = require('./models/facility');
+    const Slot = require('./models/slot');
+    const count = await Facility.countDocuments();
+    const force = req.query.force === 'true';
+
+    if (count === 0 || force) {
+      if (force) {
+        await Facility.deleteMany({});
+        await Slot.deleteMany({});
+      }
+      await seedInitialDataIfEmpty(force);
+      const newCount = await Facility.countDocuments();
+      return res.send(`
+        <div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;padding:40px;max-width:580px;margin:50px auto;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.05);text-align:center;">
+          <h2 style="color:#10b981;margin-bottom:12px;">🎉 Catalog Seeded Successfully!</h2>
+          <p style="color:#475569;font-size:16px;line-height:1.5;">Loaded <strong>${newCount}</strong> verified smart parking facilities and parking bays into MongoDB Atlas.</p>
+          <a href="/parking" style="display:inline-block;margin-top:20px;padding:12px 28px;background:#6366f1;color:#ffffff;text-decoration:none;border-radius:10px;font-weight:600;">Go to ParkSphere Explore</a>
+        </div>
+      `);
+    }
+
+    return res.send(`
+      <div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;padding:40px;max-width:580px;margin:50px auto;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.05);text-align:center;">
+        <h2 style="color:#3b82f6;margin-bottom:12px;">ℹ️ Database Already Seeded</h2>
+        <p style="color:#475569;font-size:16px;line-height:1.5;">There are already <strong>${count}</strong> verified parking facilities active in MongoDB Atlas.</p>
+        <div style="margin-top:20px;display:flex;gap:12px;justify-content:center;">
+          <a href="/parking" style="display:inline-block;padding:12px 24px;background:#6366f1;color:#ffffff;text-decoration:none;border-radius:10px;font-weight:600;">View Parking Facilities</a>
+          <a href="/seed?force=true" style="display:inline-block;padding:12px 20px;background:#f1f5f9;color:#475569;text-decoration:none;border-radius:10px;font-weight:600;font-size:14px;" onclick="return confirm('Reload initial catalog?');">Re-seed Catalog</a>
+        </div>
+      </div>
+    `);
+  } catch (err) {
+    return res.status(500).send(`Error seeding catalog: ${err.message}`);
+  }
 });
 
 // Mount resource routes

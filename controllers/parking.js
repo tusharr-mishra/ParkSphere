@@ -24,13 +24,33 @@ module.exports.index = async (req, res, next) => {
       databaseQueryFilter['pricing.hourlyRate'] = { $lte: Number(maxPrice) };
     }
 
-    // Amenity categorization (EV Charging, Covered Garages, CCTV Surveillance)
+    // Amenity and category categorization
     if (isEV === 'true' || category === 'EV Charging') {
       databaseQueryFilter.amenities = { $in: ['EV_CHARGING', 'EV'] };
     } else if (category === 'Covered Garages') {
       databaseQueryFilter.amenities = { $in: ['COVERED'] };
     } else if (category === 'CCTV Secured') {
       databaseQueryFilter.amenities = { $in: ['CCTV', 'SECURITY_24_7'] };
+    } else if (category === 'Valet Bays') {
+      databaseQueryFilter.amenities = { $in: ['VALET'] };
+    } else if (category === '24/7 Access') {
+      databaseQueryFilter.amenities = { $in: ['SECURITY_24_7', '24_7'] };
+    } else if (category === 'Downtown Hubs') {
+      databaseQueryFilter.name = { $regex: /hub|downtown|plaza|center|centre|palika|market|cyber/i };
+    } else if (category === 'Airport Parking') {
+      databaseQueryFilter.name = { $regex: /airport|terminal|aerocity|transit/i };
+    } else if (category === 'Underground') {
+      databaseQueryFilter.name = { $regex: /underground|palika|basement/i };
+    } else if (category === 'Budget Bays') {
+      databaseQueryFilter['pricing.hourlyRate'] = { $lte: 70 };
+    } else if (category === 'SUV / Trucks') {
+      databaseQueryFilter.totalSlots = { $gte: 30 };
+    } else if (category === 'Events & Arenas') {
+      databaseQueryFilter.name = { $regex: /arena|stadium|complex|center|centre|park/i };
+    } else if (category === 'Overnight Stays') {
+      databaseQueryFilter.amenities = { $in: ['SECURITY_24_7', 'COVERED'] };
+    } else if (category === 'Motorcycle') {
+      databaseQueryFilter.amenities = { $in: ['COVERED', 'CCTV'] };
     }
 
     let facilitiesQuery = Facility.find(databaseQueryFilter);
