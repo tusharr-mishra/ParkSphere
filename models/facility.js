@@ -1,3 +1,4 @@
+// Facility Model: defines parking locations, hourly rates, amenities, and coordinates
 const mongoose = require('mongoose');
 
 const facilitySchema = new mongoose.Schema(
@@ -19,6 +20,18 @@ const facilitySchema = new mongoose.Schema(
     state: {
       type: String,
       default: '',
+    },
+    country: {
+      type: String,
+      default: 'India',
+    },
+    currency: {
+      type: String,
+      default: 'INR',
+    },
+    coordinates: {
+      lat: { type: Number, default: 28.6139 },
+      lng: { type: Number, default: 77.2090 },
     },
     image: {
       type: String,
@@ -58,7 +71,7 @@ const facilitySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Compound index for search performance
+// Index for city-based searches
 facilitySchema.index({ city: 1, isActive: 1 });
 
 module.exports = mongoose.model('Facility', facilitySchema);

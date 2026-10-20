@@ -1,3 +1,4 @@
+// Review model - customer ratings and feedback for parking facilities
 const mongoose = require('mongoose');
 
 const reviewSchema = new mongoose.Schema(

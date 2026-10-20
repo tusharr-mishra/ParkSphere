@@ -1,6 +1,6 @@
+// Database seed script - populates parking facilities and bays into MongoDB
 require('dotenv').config();
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 
 const User = require('../models/user');
 const Facility = require('../models/facility');
@@ -12,16 +12,16 @@ const Review = require('../models/review');
 const AuditLog = require('../models/auditLog');
 const { facilitiesData } = require('./data');
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/parksphere';
+const DB_URL = process.env.ATLASDB_URL || process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/parksphere';
 
 const seedDatabase = async () => {
   try {
-    console.log('[Seed] Connecting to MongoDB at:', MONGO_URI);
-    await mongoose.connect(MONGO_URI);
+    console.log('[Seed] Connecting to MongoDB at:', DB_URL.split('@').length > 1 ? DB_URL.split('@')[1] : DB_URL);
+    await mongoose.connect(DB_URL);
     console.log('[Seed] Connected successfully.');
 
-    // Clear existing records
-    console.log('[Seed] Clearing old database collections...');
+    // Clear all existing collections
+    console.log('[Seed] Clearing database collections...');
     await Promise.all([
       User.deleteMany({}),
       Facility.deleteMany({}),
@@ -33,83 +33,12 @@ const seedDatabase = async () => {
       AuditLog.deleteMany({}),
     ]);
 
-    // 1. Create Seed Users
-    console.log('[Seed] Creating Seed Users (Admin, Operators, Customers)...');
-    const salt = await bcrypt.genSalt(10);
-    const adminPass = await bcrypt.hash('admin123', salt);
-    const operatorPass = await bcrypt.hash('operator123', salt);
-    const customerPass = await bcrypt.hash('customer123', salt);
-
-    const admin = await User.create({
-      name: 'System Admin',
-      email: 'admin@parksphere.com',
-      password: adminPass,
-      role: 'ADMIN',
-      isEmailVerified: true,
-    });
-
-    const operatorSF = await User.create({
-      name: 'SF Facility Operations',
-      email: 'operator.sf@parksphere.com',
-      password: operatorPass,
-      role: 'OPERATOR',
-      isEmailVerified: true,
-    });
-
-    const operatorSeattle = await User.create({
-      name: 'Seattle Parking Manager',
-      email: 'operator.seattle@parksphere.com',
-      password: operatorPass,
-      role: 'OPERATOR',
-      isEmailVerified: true,
-    });
-
-    const customer1 = await User.create({
-      name: 'Sarah Connor',
-      email: 'customer@parksphere.com',
-      password: customerPass,
-      role: 'CUSTOMER',
-      isEmailVerified: true,
-    });
-
-    const customer2 = await User.create({
-      name: 'David Miller',
-      email: 'david@parksphere.com',
-      password: customerPass,
-      role: 'CUSTOMER',
-      isEmailVerified: true,
-    });
-
-    // 2. Create Vehicles for Customer
-    console.log('[Seed] Registering demo vehicles...');
-    const vehicle1 = await Vehicle.create({
-      user: customer1._id,
-      registrationNumber: '7XYZ890',
-      vehicleType: 'SEDAN',
-      isEV: true,
-      make: 'Tesla',
-      model: 'Model 3',
-    });
-
-    const vehicle2 = await Vehicle.create({
-      user: customer1._id,
-      registrationNumber: '6ABC123',
-      vehicleType: 'SUV',
-      isEV: false,
-      make: 'Toyota',
-      model: 'RAV4',
-    });
-
-    // 3. Create Facilities and Slots
-    console.log('[Seed] Generating facilities and bays...');
+    // Create Facilities and Bays (No dummy accounts or bookings)
+    console.log(`[Seed] Generating ${facilitiesData.length} facilities and parking bays...`);
     const facilityRecords = [];
 
     for (let fData of facilitiesData) {
-      const assignedOp = fData.city === 'San Francisco' ? operatorSF._id : operatorSeattle._id;
-      const facility = await Facility.create({
-        ...fData,
-        operator: assignedOp,
-      });
+      const facility = await Facility.create(fData);
       facilityRecords.push(facility);
 
       // Create individual slots for each facility
@@ -133,78 +62,15 @@ const seedDatabase = async () => {
       await Slot.insertMany(slotsToInsert);
     }
 
-    // 4. Create Sample Reservations
-    console.log('[Seed] Creating sample reservations & audit trail...');
-    const primaryFacility = facilityRecords[0];
-    const availableSlots = await Slot.find({ facility: primaryFacility._id }).limit(3);
-
-    // Active reservation
-    const now = new Date();
-    const activeRes = await Reservation.create({
-      bookingCode: 'PS-892104',
-      user: customer1._id,
-      facility: primaryFacility._id,
-      slot: availableSlots[0]._id,
-      vehicle: vehicle1._id,
-      startTime: new Date(now.getTime() - 45 * 60 * 1000), // 45m ago
-      endTime: new Date(now.getTime() + 2 * 60 * 60 * 1000), // in 2h
-      actualEntryTime: new Date(now.getTime() - 40 * 60 * 1000),
-      estimatedAmount: 29.00,
-      finalAmount: 29.00,
-      status: 'ACTIVE',
-    });
-    // Mark slot occupied
-    await Slot.findByIdAndUpdate(availableSlots[0]._id, { status: 'OCCUPIED' });
-
-    // Completed reservation
-    await Reservation.create({
-      bookingCode: 'PS-712395',
-      user: customer1._id,
-      facility: primaryFacility._id,
-      slot: availableSlots[1]._id,
-      vehicle: vehicle1._id,
-      startTime: new Date(now.getTime() - 24 * 60 * 60 * 1000),
-      endTime: new Date(now.getTime() - 21 * 60 * 60 * 1000),
-      actualEntryTime: new Date(now.getTime() - 24 * 60 * 60 * 1000),
-      actualExitTime: new Date(now.getTime() - 21 * 60 * 60 * 1000),
-      estimatedAmount: 43.50,
-      finalAmount: 43.50,
-      status: 'COMPLETED',
-    });
-
-    // Sample Payment records
-    await Payment.create({
-      reservation: activeRes._id,
-      user: customer1._id,
-      amount: 29.00,
-      method: 'DEMO_CARD',
-      status: 'COMPLETED',
-      transactionId: 'TXN-DEMO-001',
-    });
-
-    // Sample Review
-    await Review.create({
-      facility: primaryFacility._id,
-      user: customer1._id,
-      rating: 5,
-      comment: 'Super seamless experience! Bay was open and EV charging worked perfectly.',
-    });
-
-    // Sample Audit Log
-    await AuditLog.create({
-      actor: admin._id,
-      action: 'SYSTEM_SEED_INITIALIZE',
-      entityType: 'System',
-      entityId: 'SYSTEM',
-      metadata: { facilitiesCount: facilityRecords.length, status: 'SUCCESS' },
-    });
+    const totalSlotsCount = await Slot.countDocuments();
 
     console.log('\n======================================================');
-    console.log('  🎉 DATABASE SEEDING COMPLETED SUCCESSFULLY!');
+    console.log('  🎉 DATABASE INITIALIZED WITH CLEAN CATALOG!');
     console.log('------------------------------------------------------');
-    console.log('  Customer Login: customer@parksphere.com / customer123');
-    console.log('  Operator Login: operator.sf@parksphere.com / operator123');
-    console.log('  Admin Login:    admin@parksphere.com / admin123');
+    console.log(`  Facilities Loaded: ${facilityRecords.length}`);
+    console.log(`  Total Bays Ready:  ${totalSlotsCount}`);
+    console.log('  User Accounts:     0 (Fresh for real sign up & testing)');
+    console.log('  Reservations:      0');
     console.log('======================================================\n');
 
     process.exit(0);

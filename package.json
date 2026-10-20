@@ -1,4 +1,7 @@
 {
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "name": "parksphere",
   "version": "1.0.0",
   "description": "Smart Parking Management and Reservation Platform - Express MVC",
@@ -6,8 +9,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "seed": "node init/index.js",
-    "test": "jest --runInBand --detectOpenHandles --forceExit"
+    "seed": "node init/index.js"
   },
   "keywords": [
     "parksphere",
@@ -22,6 +24,7 @@
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "connect-flash": "^0.1.1",
+    "connect-mongo": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.7",
     "ejs": "^3.1.10",
@@ -34,8 +37,6 @@
     "nodemailer": "^6.10.0"
   },
   "devDependencies": {
-    "jest": "^29.7.0",
-    "nodemon": "^3.1.9",
-    "supertest": "^7.0.0"
+    "nodemon": "^3.1.9"
   }
 }

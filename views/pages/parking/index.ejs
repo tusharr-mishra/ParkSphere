@@ -1,82 +1,138 @@
 <% layout('layouts/boilerplate') %>
 
-<div class="container py-4">
-  <!-- Top Header & Filter Controls -->
-  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-    <div>
-      <h2 class="fw-bold mb-1">Find Parking Facilities</h2>
-      <p class="text-muted small mb-0">Browse verified locations with real-time rate transparency</p>
-    </div>
+<div class="listings-page-wrapper">
 
-    <!-- Filter Form -->
-    <form action="/parking" method="GET" class="d-flex flex-wrap gap-2 align-items-center">
-      <input type="text" name="city" class="form-control form-control-sm" placeholder="City..." value="<%= searchQuery.city %>" style="width: 150px;">
-      
-      <select name="sort" class="form-select form-select-sm" style="width: 160px;" onchange="this.form.submit()">
-        <option value="">Sort by Default</option>
-        <option value="price_asc" <%= searchQuery.sort === 'price_asc' ? 'selected' : '' %>>Price: Low to High</option>
-        <option value="price_desc" <%= searchQuery.sort === 'price_desc' ? 'selected' : '' %>>Price: High to Low</option>
-      </select>
-
-      <button type="submit" class="btn btn-primary btn-sm px-3">
-        <i class="bi bi-funnel-fill me-1"></i> Filter
+  <!-- Category Filter Slider & Display Taxes Toggle (ParkSphere Style) -->
+  <div class="filter-bar-container">
+    <div class="filter-slider-wrap">
+      <button type="button" class="filter-arrow" id="filterLeft" aria-label="Scroll categories left">
+        <i class="fa-solid fa-chevron-left"></i>
       </button>
 
-      <% if (searchQuery.city || searchQuery.sort) { %>
-        <a href="/parking" class="btn btn-outline-secondary btn-sm">Clear</a>
-      <% } %>
-    </form>
+      <div id="filters">
+        <% 
+        const categoryList = [
+          { name: "Popular", icon: "fa-fire" },
+          { name: "Downtown Hubs", icon: "fa-city" },
+          { name: "Airport Parking", icon: "fa-plane-departure" },
+          { name: "EV Charging", icon: "fa-bolt" },
+          { name: "Covered Garages", icon: "fa-warehouse" },
+          { name: "Valet Bays", icon: "fa-key" },
+          { name: "24/7 Access", icon: "fa-clock" },
+          { name: "SUV / Trucks", icon: "fa-truck-pickup" },
+          { name: "CCTV Secured", icon: "fa-shield-halved" },
+          { name: "Underground", icon: "fa-arrow-down-up-across-line" },
+          { name: "Motorcycle", icon: "fa-motorcycle" },
+          { name: "Budget Bays", icon: "fa-wallet" },
+          { name: "Events & Arenas", icon: "fa-ticket" },
+          { name: "Overnight Stays", icon: "fa-moon" }
+        ];
+        const activeCat = (typeof category !== 'undefined' && category) ? category : 'Popular';
+        const cityParam = (typeof searchQuery !== 'undefined' && searchQuery.city) ? searchQuery.city : '';
+        %>
+
+        <% for (let cat of categoryList) { %>
+          <% 
+          const isSelected = (activeCat === cat.name);
+          const href = (cat.name === 'Popular')
+            ? `/parking${cityParam ? `?city=${encodeURIComponent(cityParam)}` : ''}`
+            : `/parking?category=${encodeURIComponent(cat.name)}${cityParam ? `&city=${encodeURIComponent(cityParam)}` : ''}`;
+          %>
+          <a href="<%= href %>" class="filter <%= isSelected ? 'active' : '' %>" aria-label="Filter by <%= cat.name %>">
+            <i class="fa-solid <%= cat.icon %>"></i>
+            <p><%= cat.name %></p>
+          </a>
+        <% } %>
+      </div>
+
+      <button type="button" class="filter-arrow" id="filterRight" aria-label="Scroll categories right">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <!-- Display Total with Taxes Toggle Switch -->
+    <div class="tax-toggle-box" id="taxToggleBox">
+      <div class="tax-text-group">
+        <span class="tax-main-label">Display total before taxes</span>
+        <span class="tax-sub-label">Includes estimated taxes & fees</span>
+      </div>
+      <div class="form-check form-switch m-0">
+        <input class="form-check-input" type="checkbox" role="switch" id="taxSwitch" aria-label="Display prices including municipal taxes">
+      </div>
+    </div>
   </div>
 
-  <!-- Facilities Grid -->
+  <!-- Fallback Banner When No Facilities Match Filters -->
   <% if (facilities.length === 0) { %>
-    <div class="card card-custom p-5 text-center my-4">
-      <div class="mb-3 text-muted fs-1"><i class="bi bi-inbox"></i></div>
-      <h4 class="fw-bold">No Parking Facilities Found</h4>
-      <p class="text-muted small">No facilities matched your search criteria. Try searching another city or clearing your filters.</p>
-      <div>
-        <a href="/parking" class="btn btn-primary btn-sm">View All Facilities</a>
+    <div class="search-fallback-banner">
+      <div class="fallback-icon-wrap">
+        <i class="fa-solid fa-compass"></i>
+      </div>
+      <div class="fallback-text-wrap">
+        <h4 class="mb-1">No parking locations found matching "<%= cityParam || activeCat %>"</h4>
+        <p class="mb-0 text-secondary">Explore all verified smart parking facilities across premier metro areas, or try another city search.</p>
+        <div class="mt-3">
+          <a href="/parking" class="nav-btn nav-btn-primary">View All Facilities</a>
+        </div>
       </div>
     </div>
   <% } else { %>
-    <div class="row g-4">
+    <!-- Edge-to-Edge Responsive Parking Grid (ParkSphere Grid) -->
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-4 row-cols-xxl-5 g-4 listings-grid">
       <% for (let facility of facilities) { %>
-        <div class="col-md-6 col-lg-4">
-          <div class="card card-custom h-100 overflow-hidden d-flex flex-column">
-            <img src="<%= facility.image %>" class="card-img-top" alt="<%= facility.name %>" style="height: 190px; object-fit: cover;">
-            
-            <div class="card-body p-4 d-flex flex-column flex-grow-1">
-              <div class="d-flex justify-content-between align-items-start mb-2">
-                <h5 class="fw-bold mb-0 text-white"><%= facility.name %></h5>
-                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">Open</span>
-              </div>
-
-              <p class="text-muted small mb-3">
-                <i class="bi bi-geo-alt-fill text-danger me-1"></i> <%= facility.address %>, <%= facility.city %>
-              </p>
-
-              <!-- Amenities tags -->
-              <div class="d-flex flex-wrap gap-1 mb-4">
-                <% for (let a of facility.amenities) { %>
-                  <span class="badge bg-secondary small"><%= a.replace('_', ' ') %></span>
+        <div class="col">
+          <a href="/parking/<%= facility._id %>" class="listing-card-link">
+            <div class="listing-card">
+              <!-- Image with Rounded Corners & Parking Status Badge -->
+              <div class="listing-image-wrapper">
+                <img src="<%= facility.image %>" class="listing-card-img" alt="<%= facility.name %>" loading="lazy">
+                <% if (facility.amenities && facility.amenities.includes('EV_CHARGING')) { %>
+                  <span class="slot-feature-badge"><i class="fa-solid fa-bolt text-warning me-1"></i> EV Ready</span>
+                <% } else if (facility.amenities && facility.amenities.includes('VALET')) { %>
+                  <span class="slot-feature-badge"><i class="fa-solid fa-key me-1"></i> Valet Available</span>
+                <% } else if (facility.amenities && facility.amenities.includes('COVERED')) { %>
+                  <span class="slot-feature-badge"><i class="fa-solid fa-warehouse me-1"></i> Covered Bay</span>
+                <% } else { %>
+                  <span class="slot-feature-badge"><i class="fa-solid fa-shield-halved me-1"></i> Instant Gate</span>
                 <% } %>
-                <span class="badge bg-secondary small"><i class="bi bi-clock me-1"></i> <%= facility.operatingHours.open %> - <%= facility.operatingHours.close %></span>
+                <button type="button" class="listing-heart-btn" aria-label="Save to favourites"
+                  onclick="event.preventDefault(); const i = this.querySelector('i'); i.classList.toggle('fa-solid'); i.classList.toggle('fa-regular'); i.classList.toggle('text-danger');">
+                  <i class="fa-regular fa-heart"></i>
+                </button>
               </div>
 
-              <!-- Price & Action -->
-              <div class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top border-secondary">
-                <div>
-                  <span class="fs-4 fw-bold text-white">$<%= facility.pricing.hourlyRate.toFixed(2) %></span>
-                  <span class="text-muted small"> / hour</span>
+              <!-- Card Content Information -->
+              <div class="listing-card-body">
+                <div class="listing-header-row">
+                  <h3 class="listing-card-title"><%= facility.name %></h3>
+                  <span class="listing-rating-badge">
+                    <i class="fa-solid fa-star text-warning"></i> 4.9
+                  </span>
                 </div>
-                <a href="/parking/<%= facility._id %>" class="btn btn-primary btn-sm px-3">
-                  View & Book <i class="bi bi-arrow-right ms-1"></i>
-                </a>
+
+                <p class="listing-card-location"><%= facility.address %>, <%= facility.city %></p>
+                <p class="listing-card-meta"><%= facility.totalSlots %> bays open • Live Gate Entry</p>
+
+                <div class="listing-price-row">
+                  <% const symMap = { INR: '₹', USD: '$', GBP: '£', EUR: '€', AED: 'AED', SGD: 'S$', JPY: '¥', AUD: 'A$' }; %>
+                  <span class="listing-price-val listing-price"
+                    data-base-price="<%= facility.pricing.hourlyRate %>"
+                    data-currency-symbol="<%= symMap[facility.currency] || '$' %>"
+                    data-tax-rate="0.12">
+                    <%= formatPrice(facility.pricing.hourlyRate, facility.currency) %>
+                  </span>
+                  <span class="text-secondary"> hour</span>
+                </div>
+
+                <span class="tax-included-label" hidden>Includes 12% municipal taxes & fees</span>
               </div>
             </div>
-          </div>
+          </a>
         </div>
       <% } %>
     </div>
   <% } %>
+
 </div>
+
+<script src="/js/listings.js"></script>

@@ -1,3 +1,4 @@
+// Vehicle Model: customer registered vehicle with type and EV status
 const mongoose = require('mongoose');
 
 const vehicleSchema = new mongoose.Schema(

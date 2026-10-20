@@ -1,3 +1,4 @@
+// User Model: defines customer, operator, and admin accounts
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
@@ -31,6 +32,7 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // OTP subdocument for email verification
     otp: {
       code: String,
       expiresAt: Date,
@@ -44,7 +46,7 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Method to verify password match
+// Verify password with bcrypt
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };

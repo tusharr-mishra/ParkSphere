@@ -1,0 +1,197 @@
+/* ==========================================================================
+   ParkSphere - Modular Navbar (navbar.css)
+   Clean White Canvas, Black & White Oval Buttons, "ParkSphere" written big
+   ========================================================================== */
+
+.navbar {
+  min-height: 80px;
+  background-color: #ffffff !important;
+  border-bottom: 1px solid var(--border-light);
+  padding: 0.75rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+
+.navbar .container-fluid {
+  max-width: 1780px;
+  padding-left: 3rem;
+  padding-right: 3rem;
+}
+
+/* Brand Section (ParkSphere written big in Georgia) */
+.navbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--brand-black) !important;
+  text-decoration: none;
+  padding: 0;
+  margin-right: 1.5rem;
+  transition: opacity 0.2s ease;
+}
+
+.navbar-brand:hover {
+  opacity: 0.9;
+}
+
+.brand-icon {
+  font-size: 2.1rem;
+  color: var(--brand-black);
+}
+
+.brand-name {
+  font-size: 1.85rem !important; /* ParkSphere written big */
+  font-weight: 800 !important;
+  letter-spacing: -0.5px;
+  color: var(--brand-black) !important;
+  white-space: nowrap;
+}
+
+/* Center 3-Segment Capsule Search Pill (ParkSphere Search System) */
+.navbar-search-pill {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 440px;
+  height: 48px;
+  padding: 4px 6px 4px 18px;
+  border: 1px solid #dddddd;
+  border-radius: var(--radius-pill);
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.navbar-search-pill:hover,
+.navbar-search-pill:focus-within {
+  border-color: #717171;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
+}
+
+.search-segment-btn {
+  border: none;
+  background: transparent;
+  padding: 0 4px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.search-divider {
+  width: 1px;
+  height: 22px;
+  margin: 0 10px;
+  background-color: #e5e5e5;
+  flex-shrink: 0;
+}
+
+.search-input-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+}
+
+.search-input::placeholder {
+  color: #717171;
+}
+
+.search-button {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background-color: var(--brand-black);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, background-color 0.2s ease;
+}
+
+.search-button:hover {
+  background-color: var(--brand-black-hover);
+  transform: scale(1.06);
+}
+
+/* Right Navigation Action Buttons */
+.navbar-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.nav-globe-btn {
+  border: none;
+  background: transparent;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.nav-globe-btn:hover {
+  background-color: var(--bg-muted);
+}
+
+.user-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 1rem;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-pill);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background-color: #ffffff;
+}
+
+/* Responsiveness */
+@media (max-width: 991.98px) {
+  .navbar .container-fluid {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+  
+  .brand-name {
+    font-size: 1.55rem !important;
+  }
+  
+  .navbar-search-pill {
+    max-width: 100%;
+    margin: 0.75rem 0;
+  }
+  
+  .navbar-right-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-light);
+  }
+  
+  .navbar-right-actions .nav-btn {
+    width: 100%;
+  }
+}

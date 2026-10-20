@@ -1,10 +1,9 @@
-// Cloudinary Configuration for Image Uploads (e.g., parking facility photos)
-// Configure CLOUD_NAME, CLOUD_API_KEY, and CLOUD_API_SECRET in your .env file.
-
+// Cloudinary Configuration for Image Uploads
 const cloudConfig = {
-  cloudName: process.env.CLOUD_NAME || '',
-  apiKey: process.env.CLOUD_API_KEY || '',
-  apiSecret: process.env.CLOUD_API_SECRET || '',
+  cloudName: process.env.CLOUDINARY_CLOUD_NAME || process.env.CLOUD_NAME || '',
+  apiKey: process.env.CLOUDINARY_API_KEY || process.env.CLOUD_API_KEY || '',
+  apiSecret: process.env.CLOUDINARY_API_SECRET || process.env.CLOUD_API_SECRET || '',
+  folder: 'ParkSphere_DEV',
 };
 
 module.exports = cloudConfig;

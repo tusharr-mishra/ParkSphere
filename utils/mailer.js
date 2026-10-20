@@ -1,6 +1,6 @@
+// Email utility - sends 6-digit OTP codes for account verification
 const nodemailer = require('nodemailer');
 
-// Configure Nodemailer transporter with Gmail SMTP or development fallback
 let transporter = null;
 
 if (process.env.SMTP_USER && process.env.SMTP_PASSWORD) {
@@ -15,9 +15,7 @@ if (process.env.SMTP_USER && process.env.SMTP_PASSWORD) {
   });
 }
 
-/**
- * Send an OTP verification email to user
- */
+// Sends OTP email or falls back to console if SMTP is not configured
 const sendOtpEmail = async (email, otp) => {
   const subject = 'Your ParkSphere Verification Code';
   const text = `Your verification code for ParkSphere is: ${otp}. It expires in 10 minutes.`;
@@ -51,9 +49,6 @@ const sendOtpEmail = async (email, otp) => {
   }
 };
 
-/**
- * Clean development console fallback
- */
 function printOtpInConsole(email, otp) {
   console.log('\n=============================================');
   console.log(`  [DEV EMAIL FALLBACK] Target: ${email}`);

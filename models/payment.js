@@ -1,3 +1,4 @@
+// Payment model - records transaction receipts for parking bookings
 const mongoose = require('mongoose');
 
 const paymentSchema = new mongoose.Schema(

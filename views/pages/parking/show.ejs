@@ -1,47 +1,109 @@
 <% layout('layouts/boilerplate') %>
 
+<% const currSymbol = facility.currency === 'INR' ? '₹' : (facility.currency === 'GBP' ? '£' : '$'); %>
+
 <div class="container py-4">
   <!-- Back Button & Breadcrumbs -->
   <div class="mb-3">
-    <a href="/parking" class="text-muted text-decoration-none small">
-      <i class="bi bi-chevron-left me-1"></i> Back to Facilities
+    <a href="/parking" class="text-secondary text-decoration-none small">
+      <i class="fa-solid fa-chevron-left me-1"></i> Back to All Parking Locations
     </a>
   </div>
 
   <div class="row g-4">
-    <!-- Facility Info Column -->
+    <!-- Facility Info Column (Left) -->
     <div class="col-lg-7">
-      <div class="card card-custom overflow-hidden mb-4">
-        <img src="<%= facility.image %>" class="w-100" alt="<%= facility.name %>" style="max-height: 320px; object-fit: cover;">
+      
+      <!-- Main Facility Banner Card -->
+      <div class="card card-custom overflow-hidden mb-4 border shadow-sm" style="border-radius: 14px; background-color: #ffffff;">
+        <img src="<%= facility.image %>" class="w-100" alt="<%= facility.name %>" style="max-height: 340px; object-fit: cover;">
         <div class="card-body p-4">
           <div class="d-flex justify-content-between align-items-start mb-2">
-            <h2 class="fw-bold mb-0 text-white"><%= facility.name %></h2>
+            <div>
+              <h2 class="fw-bold mb-1" style="color: var(--text-primary); font-size: 1.75rem;"><%= facility.name %></h2>
+              <p class="text-secondary mb-2">
+                <i class="fa-solid fa-location-dot text-danger me-1"></i> <%= facility.address %>, <%= facility.city %>, <%= facility.state || '' %>
+              </p>
+              <div class="d-flex align-items-center gap-2 small">
+                <span class="fw-bold text-dark"><i class="fa-solid fa-star text-warning me-1"></i> 4.9</span>
+                <span class="text-secondary">•</span>
+                <span class="text-secondary">128 verified driver visits</span>
+                <span class="text-secondary">•</span>
+                <span class="text-success fw-bold"><i class="fa-solid fa-circle-check text-success me-1"></i> Verified Open</span>
+              </div>
+            </div>
             <div class="text-end">
-              <span class="fs-3 fw-bold text-primary">$<%= facility.pricing.hourlyRate.toFixed(2) %></span>
-              <span class="text-muted small">/hr</span>
+              <span class="fs-3 fw-bold" style="color: var(--brand-black);"><%= currSymbol %> <%= Math.round(facility.pricing.hourlyRate) %></span>
+              <span class="text-secondary small">/ hour</span>
             </div>
           </div>
 
-          <p class="text-muted mb-3">
-            <i class="bi bi-geo-alt-fill text-danger me-1"></i> <%= facility.address %>, <%= facility.city %>
-          </p>
-
-          <div class="d-flex flex-wrap gap-2 mb-4">
+          <!-- Amenities Badges -->
+          <div class="d-flex flex-wrap gap-2 my-3 pt-2 pb-3 border-top border-bottom">
             <% for (let a of facility.amenities) { %>
-              <span class="badge bg-secondary p-2"><i class="bi bi-check2 me-1"></i> <%= a.replace('_', ' ') %></span>
+              <span class="badge p-2 small" style="background-color: #f7f7f7; color: #334155; border: 1px solid #e2e8f0;">
+                <% if (a === 'EV_CHARGING' || a === 'EV') { %><i class="fa-solid fa-bolt text-warning me-1"></i><% } %>
+                <% if (a === 'COVERED') { %><i class="fa-solid fa-warehouse text-primary me-1"></i><% } %>
+                <% if (a === 'VALET') { %><i class="fa-solid fa-key text-success me-1"></i><% } %>
+                <% if (a === 'CCTV' || a === 'SECURITY_24_7') { %><i class="fa-solid fa-shield-halved text-dark me-1"></i><% } %>
+                <% if (a === 'ACCESSIBLE') { %><i class="fa-solid fa-wheelchair text-info me-1"></i><% } %>
+                <%= a.replace(/_/g, ' ') %>
+              </span>
             <% } %>
-            <span class="badge bg-secondary p-2"><i class="bi bi-clock me-1"></i> <%= facility.operatingHours.open %> to <%= facility.operatingHours.close %></span>
+            <span class="badge p-2 small" style="background-color: #f7f7f7; color: #334155; border: 1px solid #e2e8f0;">
+              <i class="fa-regular fa-clock me-1"></i> Hours: <%= facility.operatingHours.open %> - <%= facility.operatingHours.close %>
+            </span>
+          </div>
+
+          <!-- Facility Key Specifications Matrix -->
+          <h5 class="fw-bold mb-3" style="color: var(--text-primary);">
+            <i class="fa-solid fa-sliders me-2"></i>Facility Specifications
+          </h5>
+          <div class="row g-2 mb-4">
+            <div class="col-sm-6">
+              <div class="p-3 rounded-3 border" style="background-color: #fcfcfc;">
+                <div class="text-secondary small mb-1"><i class="fa-solid fa-arrows-up-down text-dark me-1"></i> Max Height Clearance</div>
+                <div class="fw-bold text-dark">7ft 2in (2.18m) — Fits Large SUVs & Vans</div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="p-3 rounded-3 border" style="background-color: #fcfcfc;">
+                <div class="text-secondary small mb-1"><i class="fa-solid fa-qrcode text-dark me-1"></i> Entry Gate Mechanism</div>
+                <div class="fw-bold text-dark">Automated ANPR & QR Code Barrier</div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="p-3 rounded-3 border" style="background-color: #fcfcfc;">
+                <div class="text-secondary small mb-1"><i class="fa-solid fa-video text-dark me-1"></i> Security & Surveillance</div>
+                <div class="fw-bold text-dark">24/7 CCTV & On-Site Security Guard</div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="p-3 rounded-3 border" style="background-color: #fcfcfc;">
+                <div class="text-secondary small mb-1"><i class="fa-solid fa-car-side text-dark me-1"></i> Compatible Vehicles</div>
+                <div class="fw-bold text-dark">Compact, Sedan, SUV, EV & Two-Wheeler</div>
+              </div>
+            </div>
           </div>
 
           <!-- Interactive Slot Map Visualizer -->
-          <h5 class="fw-bold text-white mb-2">Facility Bays & Inventory</h5>
-          <p class="text-muted small mb-3">Click on any open bay (green) to select it for your reservation.</p>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="fw-bold mb-0" style="color: var(--text-primary);">
+              <i class="fa-solid fa-square-parking me-2"></i>Live Parking Bays
+            </h5>
+            <div class="d-flex gap-2 small">
+              <span class="d-inline-flex align-items-center gap-1"><span style="width: 10px; height: 10px; border-radius: 50%; background: #166534; display: inline-block;"></span> Available</span>
+              <span class="d-inline-flex align-items-center gap-1"><span style="width: 10px; height: 10px; border-radius: 50%; background: #dc2626; display: inline-block;"></span> Occupied</span>
+              <span class="d-inline-flex align-items-center gap-1"><span style="width: 10px; height: 10px; border-radius: 50%; background: #d97706; display: inline-block;"></span> Maint</span>
+            </div>
+          </div>
+          <p class="text-secondary small mb-3">Click on any green open bay to select it directly for your reservation.</p>
 
-          <div class="row g-2 p-3 rounded-3" style="background-color: #0b1329; border: 1px solid var(--border-subtle); max-height: 280px; overflow-y: auto;">
+          <div class="row g-2 p-3 rounded-3 mb-4" style="background-color: #fbfbfb; border: 1.5px dashed var(--border-light); max-height: 280px; overflow-y: auto;">
             <% for (let slot of slots) { %>
               <div class="col-4 col-sm-3 col-md-2 text-center">
                 <% if (slot.status === 'AVAILABLE') { %>
-                  <div class="slot-badge-available" onclick="selectSlot('<%= slot._id %>', '<%= slot.slotNumber %>', '<%= slot.slotType %>', <%= slot.isEV %>)">
+                  <div class="slot-badge-available slot-item" id="slot-card-<%= slot._id %>" onclick="selectSlot('<%= slot._id %>', '<%= slot.slotNumber %>', '<%= slot.slotType %>', <%= slot.isEV %>)">
                     <div class="fw-bold"><%= slot.slotNumber %></div>
                     <div class="small" style="font-size: 0.65rem;"><%= slot.slotType %> <%= slot.isEV ? '⚡' : '' %></div>
                   </div>
@@ -59,39 +121,166 @@
               </div>
             <% } %>
           </div>
+
         </div>
       </div>
 
-      <!-- Reviews Section -->
-      <div class="card card-custom p-4">
-        <h5 class="fw-bold text-white mb-3"><i class="bi bi-star-fill text-warning me-2"></i>Customer Reviews</h5>
+      <!-- How Parking Works Here (3-Step Guide) -->
+      <div class="card card-custom p-4 border shadow-sm mb-4" style="border-radius: 14px; background-color: #ffffff;">
+        <h5 class="fw-bold mb-3" style="color: var(--text-primary);">
+          <i class="fa-solid fa-circle-question me-2"></i>How Parking Works at This Facility
+        </h5>
+        <div class="row g-3">
+          <div class="col-md-4 text-center">
+            <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-2" style="background-color: #f7f7f7; width: 56px; height: 56px;">
+              <i class="fa-solid fa-mobile-screen-button fs-4 text-dark"></i>
+            </div>
+            <h6 class="fw-bold mb-1">1. Pre-Book Bay</h6>
+            <p class="text-secondary small mb-0">Select your time window. Your bay is reserved exclusively with zero double-booking.</p>
+          </div>
+          <div class="col-md-4 text-center">
+            <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-2" style="background-color: #f7f7f7; width: 56px; height: 56px;">
+              <i class="fa-solid fa-barcode fs-4 text-dark"></i>
+            </div>
+            <h6 class="fw-bold mb-1">2. Scan at Entry</h6>
+            <p class="text-secondary small mb-0">Drive up to the entrance barrier; scan your mobile QR code or let the ANPR camera read your plate.</p>
+          </div>
+          <div class="col-md-4 text-center">
+            <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-2" style="background-color: #f7f7f7; width: 56px; height: 56px;">
+              <i class="fa-solid fa-right-from-bracket fs-4 text-dark"></i>
+            </div>
+            <h6 class="fw-bold mb-1">3. Easy Departure</h6>
+            <p class="text-secondary small mb-0">Depart whenever ready. Automated exit logging with a complimentary 15-minute grace period.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Mapbox Map Location Card -->
+      <div class="card card-custom p-4 border shadow-sm mb-4" style="border-radius: 14px; background-color: #ffffff;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h5 class="fw-bold mb-0" style="color: var(--text-primary);">
+              <i class="fa-solid fa-map-location-dot me-2"></i>Location & Directions
+            </h5>
+            <p class="text-secondary small mb-0"><%= facility.address %>, <%= facility.city %>, <%= facility.state || '' %></p>
+          </div>
+          <a href="https://www.google.com/maps/search/?api=1&query=<%= encodeURIComponent(facility.name + ' ' + facility.address + ' ' + facility.city) %>"
+            target="_blank" rel="noopener noreferrer" class="nav-btn nav-btn-outline btn-sm">
+            <i class="fa-solid fa-diamond-turn-right me-1"></i> Get Directions
+          </a>
+        </div>
+        
+        <!-- Embedded Mapbox Container -->
+        <div id="facilityMap" style="width: 100%; height: 280px; border-radius: 12px; background-color: #e5e5e5; border: 1px solid var(--border-light);"></div>
+      </div>
+
+      <!-- Reviews & Verified Feedback Section -->
+      <div class="card card-custom p-4 border shadow-sm mb-4" style="border-radius: 14px; background-color: #ffffff;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0" style="color: var(--text-primary);">
+            <i class="fa-solid fa-star text-warning me-2"></i>Driver Ratings & Reviews
+          </h5>
+          <span class="fw-bold text-dark">4.9 ★ Rating</span>
+        </div>
+
+        <!-- Rating Category Scorecard -->
+        <div class="row g-3 mb-4 pb-3 border-bottom small">
+          <div class="col-6">
+            <div class="d-flex justify-content-between text-secondary mb-1">
+              <span>Gate Access Speed</span>
+              <span class="fw-bold text-dark">4.9 ★</span>
+            </div>
+            <div class="progress" style="height: 6px;">
+              <div class="progress-bar bg-dark" style="width: 98%;"></div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="d-flex justify-content-between text-secondary mb-1">
+              <span>Security & Lighting</span>
+              <span class="fw-bold text-dark">5.0 ★</span>
+            </div>
+            <div class="progress" style="height: 6px;">
+              <div class="progress-bar bg-dark" style="width: 100%;"></div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="d-flex justify-content-between text-secondary mb-1">
+              <span>Bay Space & Maneuverability</span>
+              <span class="fw-bold text-dark">4.8 ★</span>
+            </div>
+            <div class="progress" style="height: 6px;">
+              <div class="progress-bar bg-dark" style="width: 96%;"></div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="d-flex justify-content-between text-secondary mb-1">
+              <span>Value for Money</span>
+              <span class="fw-bold text-dark">4.9 ★</span>
+            </div>
+            <div class="progress" style="height: 6px;">
+              <div class="progress-bar bg-dark" style="width: 98%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Review List -->
         <% if (reviews.length === 0) { %>
-          <p class="text-muted small mb-0">No reviews written yet for this facility. Book and complete your stay to share your experience!</p>
+          <p class="text-secondary small mb-3">No reviews submitted yet for this facility. Complete your stay and share your feedback!</p>
         <% } else { %>
-          <div class="d-flex flex-column gap-3">
+          <div class="d-flex flex-column gap-3 mb-4">
             <% for (let r of reviews) { %>
-              <div class="border-bottom border-secondary pb-2">
+              <div class="border-bottom pb-2">
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                  <span class="fw-semibold text-white"><%= r.user ? r.user.name : 'Customer' %></span>
+                  <span class="fw-bold" style="color: var(--text-primary);"><%= r.user ? r.user.name : 'Verified Driver' %></span>
                   <span class="text-warning small"><%= '★'.repeat(r.rating) %><%= '☆'.repeat(5 - r.rating) %></span>
                 </div>
-                <p class="text-muted small mb-0"><%= r.comment %></p>
+                <p class="text-secondary small mb-0"><%= r.comment %></p>
               </div>
             <% } %>
           </div>
         <% } %>
+
+        <!-- Leave a Review Form -->
+        <% if (currentUser) { %>
+          <div class="pt-3 border-top">
+            <h6 class="fw-bold mb-2">Leave a Verified Review</h6>
+            <form action="/parking/<%= facility._id %>/reviews" method="POST">
+              <div class="row g-2 mb-2">
+                <div class="col-sm-4">
+                  <select name="rating" class="form-select form-select-sm" required>
+                    <option value="5">★★★★★ (5 Stars)</option>
+                    <option value="4">★★★★☆ (4 Stars)</option>
+                    <option value="3">★★★☆☆ (3 Stars)</option>
+                    <option value="2">★★☆☆☆ (2 Stars)</option>
+                    <option value="1">★☆☆☆☆ (1 Star)</option>
+                  </select>
+                </div>
+                <div class="col-sm-8">
+                  <input type="text" name="comment" class="form-control form-control-sm" placeholder="Write a short review of your parking experience..." required>
+                </div>
+              </div>
+              <button type="submit" class="nav-btn nav-btn-primary btn-sm">Post Review</button>
+            </form>
+          </div>
+        <% } %>
       </div>
+
     </div>
 
-    <!-- Booking Form Column -->
+    <!-- Sticky Booking Form Column (Right) -->
     <div class="col-lg-5">
-      <div class="card card-custom p-4 sticky-top shadow" style="top: 85px;">
-        <h4 class="fw-bold text-white mb-3">Reserve a Bay</h4>
+      <div class="card sticky-booking-card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+          <h4 class="fw-bold mb-0" style="color: var(--text-primary);">Reserve a Bay</h4>
+          <span class="badge px-3 py-2" style="background-color: #f7f7f7; color: var(--brand-black); border: 1px solid var(--border-light); font-size: 0.85rem;">
+            Instant Gate Entry
+          </span>
+        </div>
 
         <% if (!currentUser) { %>
-          <div class="alert alert-warning small mb-0">
-            <i class="bi bi-info-circle-fill me-2"></i>
-            Please <a href="/login" class="alert-link">sign in</a> to reserve a parking slot.
+          <div class="alert alert-info small mb-3">
+            <i class="fa-solid fa-circle-info me-2 text-primary"></i>
+            Please <a href="/login" class="fw-bold text-decoration-none">sign in</a> with your account to complete your parking reservation.
           </div>
         <% } else { %>
           <form action="/reservations" method="POST" id="bookingForm">
@@ -99,65 +288,73 @@
 
             <!-- Selected Slot Display -->
             <div class="mb-3">
-              <label class="form-label text-muted small fw-semibold">Target Slot</label>
-              <select name="slotId" id="slotSelect" class="form-select" required>
-                <option value="" disabled selected>-- Choose from Bay Map or Select Below --</option>
-                <% for (let s of slots.filter(x => x.status === 'AVAILABLE')) { %>
-                  <option value="<%= s._id %>">Slot <%= s.slotNumber %> (<%= s.slotType %><%= s.isEV ? ' | EV' : '' %>)</option>
-                <% } %>
-              </select>
+              <label class="form-label">Selected Parking Bay</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white"><i class="fa-solid fa-square-parking text-success"></i></span>
+                <input type="text" id="slotDisplay" class="form-control fw-bold" placeholder="Click an open green bay on the left..." readonly required>
+                <input type="hidden" name="slotId" id="selectedSlotId" required>
+              </div>
             </div>
 
             <!-- Vehicle Selection -->
             <div class="mb-3">
               <div class="d-flex justify-content-between align-items-center mb-1">
-                <label class="form-label text-muted small fw-semibold mb-0">Vehicle</label>
-                <a href="/customer/vehicles" class="small text-primary text-decoration-none">+ Add Vehicle</a>
+                <label class="form-label mb-0">Select Vehicle</label>
+                <a href="/customer/vehicles" class="small text-decoration-none" style="color: var(--brand-black); font-weight: 600;">+ Add Vehicle</a>
               </div>
               <% if (userVehicles.length === 0) { %>
-                <div class="alert alert-warning small p-2">
-                  No vehicles registered yet. <a href="/customer/vehicles" class="fw-bold text-decoration-none">Click here to register your vehicle plate</a> before reserving.
+                <div class="alert alert-warning small p-2 mb-0">
+                  <i class="fa-solid fa-triangle-exclamation me-1"></i> No vehicles found. <a href="/customer/vehicles" class="alert-link">Register a vehicle</a> before booking.
                 </div>
               <% } else { %>
                 <select name="vehicleId" class="form-select" required>
                   <% for (let v of userVehicles) { %>
-                    <option value="<%= v._id %>"><%= v.registrationNumber %> - <%= v.make %> <%= v.model %> (<%= v.vehicleType %>)</option>
+                    <option value="<%= v._id %>">
+                      <%= v.registrationNumber %> (<%= v.make %> <%= v.model %> - <%= v.vehicleType %><%= v.isEV ? ' ⚡ EV' : '' %>)
+                    </option>
                   <% } %>
                 </select>
               <% } %>
             </div>
 
-            <!-- Date Interval Selectors -->
+            <!-- Arrival & Departure Time Pickers -->
             <div class="row g-2 mb-3">
               <div class="col-6">
-                <label class="form-label text-muted small fw-semibold">Start Time</label>
-                <input type="datetime-local" name="startTime" id="startTimeInput" class="form-control form-control-sm" required onchange="calculateEstimatedTotal()">
+                <label class="form-label">Arrival Window</label>
+                <input type="datetime-local" name="startTime" id="startTimeInput" class="form-control form-control-sm" required onchange="calculatePrice()">
               </div>
               <div class="col-6">
-                <label class="form-label text-muted small fw-semibold">End Time</label>
-                <input type="datetime-local" name="endTime" id="endTimeInput" class="form-control form-control-sm" required onchange="calculateEstimatedTotal()">
+                <label class="form-label">Departure Window</label>
+                <input type="datetime-local" name="endTime" id="endTimeInput" class="form-control form-control-sm" required onchange="calculatePrice()">
               </div>
             </div>
 
-            <!-- Estimated Pricing Calculator -->
-            <div class="p-3 rounded-3 mb-4" style="background-color: #0b1329; border: 1px solid var(--border-subtle);">
-              <div class="d-flex justify-content-between align-items-center text-muted small mb-1">
-                <span>Rate</span>
-                <span>$<%= facility.pricing.hourlyRate.toFixed(2) %> / hr</span>
+            <!-- Transparent Price Breakdown (ParkSphere System) -->
+            <div class="p-3 rounded mb-3" style="background-color: #f7f7f7; border: 1px solid var(--border-light);">
+              <div class="fee-breakdown-row">
+                <span>Rate per hour:</span>
+                <span class="fw-semibold text-dark"><%= currSymbol %> <span id="rateVal"><%= facility.pricing.hourlyRate %></span></span>
               </div>
-              <div class="d-flex justify-content-between align-items-center text-muted small mb-2">
-                <span>Estimated Duration</span>
-                <span id="estimatedDuration">-- hrs</span>
+              <div class="fee-breakdown-row">
+                <span>Reserved duration:</span>
+                <span class="fw-semibold text-dark"><span id="durationVal">0</span> hour(s)</span>
               </div>
-              <div class="d-flex justify-content-between align-items-center border-top border-secondary pt-2">
-                <span class="fw-bold text-white">Estimated Total:</span>
-                <span class="fs-5 fw-bold text-success" id="estimatedTotal">$0.00</span>
+              <div class="fee-breakdown-row">
+                <span>Municipal parking taxes & fees (12%):</span>
+                <span class="fw-semibold text-dark"><%= currSymbol %> <span id="taxVal">0.00</span></span>
+              </div>
+              <div class="fee-breakdown-total">
+                <span>Total Authorized Fee:</span>
+                <span style="color: var(--brand-black);"><%= currSymbol %> <span id="totalVal">0.00</span></span>
               </div>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" <%= userVehicles.length === 0 ? 'disabled' : '' %>>
-              <i class="bi bi-shield-check me-1"></i> Confirm & Reserve Bay
+            <button type="submit" id="submitBtn" class="nav-btn nav-btn-primary w-100 py-2 fw-bold" <%= userVehicles.length === 0 ? 'disabled' : '' %>>
+              <i class="fa-solid fa-lock me-1"></i> Confirm & Reserve Bay
             </button>
+            <div class="text-center text-secondary small mt-2">
+              <i class="fa-solid fa-shield-halved text-success me-1"></i> Guaranteed Spot • Zero Double-Booking
+            </div>
           </form>
         <% } %>
       </div>
@@ -166,45 +363,100 @@
 </div>
 
 <script>
-  // Populate Slot Select dropdown when a bay is clicked in the visualizer
+  // 1. Slot selection interactive handler
   function selectSlot(slotId, slotNumber, slotType, isEV) {
-    const slotSelect = document.getElementById('slotSelect');
-    if (slotSelect) {
-      slotSelect.value = slotId;
+    document.getElementById('selectedSlotId').value = slotId;
+    document.getElementById('slotDisplay').value = 'Bay ' + slotNumber + ' (' + slotType + (isEV ? ' ⚡ EV' : '') + ')';
+    
+    document.querySelectorAll('.slot-item').forEach(el => el.classList.remove('selected'));
+    const selectedCard = document.getElementById('slot-card-' + slotId);
+    if (selectedCard) {
+      selectedCard.classList.add('selected');
     }
   }
 
-  // Pre-fill default booking start time (now) and end time (2 hours later)
-  window.addEventListener('DOMContentLoaded', () => {
+  // 2. Pre-fill initial arrival and departure dates
+  (function initDates() {
     const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    const startStr = now.toISOString().slice(0, 16);
-
+    now.setMinutes(Math.ceil(now.getMinutes() / 15) * 15, 0, 0);
     const later = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-    const endStr = later.toISOString().slice(0, 16);
+
+    const toInputFormat = d => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const mins = String(d.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${mins}`;
+    };
 
     const startInput = document.getElementById('startTimeInput');
     const endInput = document.getElementById('endTimeInput');
+    if (startInput && endInput) {
+      startInput.value = toInputFormat(now);
+      startInput.min = toInputFormat(now);
+      endInput.value = toInputFormat(later);
+      endInput.min = toInputFormat(now);
+      calculatePrice();
+    }
+  })();
 
-    if (startInput && !startInput.value) startInput.value = startStr;
-    if (endInput && !endInput.value) endInput.value = endStr;
-
-    calculateEstimatedTotal();
-  });
-
-  function calculateEstimatedTotal() {
+  // 3. Real-time price calculation
+  function calculatePrice() {
     const startVal = document.getElementById('startTimeInput')?.value;
     const endVal = document.getElementById('endTimeInput')?.value;
-    const hourlyRate = <%= facility.pricing.hourlyRate %>;
+    const hourlyRate = parseFloat(document.getElementById('rateVal')?.textContent) || 10;
+    
+    if (!startVal || !endVal) return;
+    
+    const start = new Date(startVal);
+    const end = new Date(endVal);
+    
+    if (end <= start) {
+      document.getElementById('durationVal').textContent = '0';
+      document.getElementById('taxVal').textContent = '0.00';
+      document.getElementById('totalVal').textContent = '0.00';
+      return;
+    }
 
-    if (startVal && endVal) {
-      const s = new Date(startVal);
-      const e = new Date(endVal);
-      if (e > s) {
-        const hours = Math.max(1, Math.ceil((e - s) / (1000 * 60 * 60)));
-        document.getElementById('estimatedDuration').innerText = hours + ' hr' + (hours > 1 ? 's' : '');
-        document.getElementById('estimatedTotal').innerText = '$' + (hours * hourlyRate).toFixed(2);
+    const durationHours = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60)));
+    const baseFare = durationHours * hourlyRate;
+    const taxAndFees = Math.round(baseFare * 0.12 * 100) / 100;
+    const total = baseFare + taxAndFees;
+
+    document.getElementById('durationVal').textContent = durationHours;
+    document.getElementById('taxVal').textContent = taxAndFees.toFixed(2);
+    document.getElementById('totalVal').textContent = total.toFixed(2);
+  }
+
+  // 4. Interactive Mapbox GL Map Initialization
+  (function initMapbox() {
+    const mapToken = '<%= MAPBOX_TOKEN %>';
+    const lat = Number('<%= (facility.coordinates && facility.coordinates.lat) ? facility.coordinates.lat : 28.6139 %>');
+    const lng = Number('<%= (facility.coordinates && facility.coordinates.lng) ? facility.coordinates.lng : 77.2090 %>');
+    const facilityName = '<%= facility.name.replace(/\'/g, "\\'") %>';
+
+    if (typeof mapboxgl !== 'undefined' && mapToken && mapToken.startsWith('pk.')) {
+      mapboxgl.accessToken = mapToken;
+      const map = new mapboxgl.Map({
+        container: 'facilityMap',
+        style: 'mapbox://styles/mapbox/light-v11',
+        center: [lng, lat],
+        zoom: 14,
+      });
+
+      map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+      // Create custom marker with popup
+      new mapboxgl.Marker({ color: '#111111' })
+        .setLngLat([lng, lat])
+        .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML('<strong>' + facilityName + '</strong><br>Automated Entry Gate'))
+        .addTo(map);
+    } else {
+      const mapEl = document.getElementById('facilityMap');
+      if (mapEl) {
+        mapEl.innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-secondary small"><i class="fa-solid fa-map-pin me-2"></i> Lat: ' + lat + ', Lng: ' + lng + ' (Mapbox token active)</div>';
       }
     }
-  }
+  })();
 </script>

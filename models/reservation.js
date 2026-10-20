@@ -1,3 +1,4 @@
+// Reservation Model: tracks booking codes, time intervals, status, and gate timestamps
 const mongoose = require('mongoose');
 
 const reservationSchema = new mongoose.Schema(
@@ -72,7 +73,7 @@ const reservationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// High performance index for reservation conflict detection
+// Index for checking overlapping reservations: (start < requestedEnd) && (end > requestedStart)
 reservationSchema.index({ slot: 1, startTime: 1, endTime: 1, status: 1 });
 reservationSchema.index({ user: 1, createdAt: -1 });
 

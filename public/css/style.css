@@ -1,188 +1,380 @@
-/* ParkSphere Modern Aesthetic Stylesheet */
+/* ==========================================================================
+   ParkSphere - Modern Aesthetic Design System
+   Font: Georgia / Times New Roman (Universally enforced across the app)
+   Palette: Two Blending Colors for Smart Parking - Obsidian Black & Pure White
+   ========================================================================== */
 
 :root {
-  --primary-blue: #2563eb;
-  --primary-hover: #1d4ed8;
-  --dark-bg: #0b1329;
-  --card-bg: #111e38;
-  --card-elevated: #162646;
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-glow: rgba(59, 130, 246, 0.3);
-  --text-primary: #f8fafc;
-  --text-muted: #94a3b8;
-  --accent-emerald: #10b981;
-  --accent-amber: #f59e0b;
-  --accent-rose: #ef4444;
+  --brand-black: #111111;
+  --brand-black-hover: #000000;
+  --brand-black-active: #222222;
+  --brand-white: #ffffff;
+  
+  --text-primary: #222222;
+  --text-secondary: #717171;
+  --border-light: #ebebeb;
+  --border-card: #e2e8f0;
+  --bg-page: #ffffff;
+  --bg-muted: #f7f7f7;
+  
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --radius-pill: 50px;
+  --radius-card: 14px;
+  --font-serif: Georgia, "Times New Roman", Times, serif;
+
+  /* Bootstrap Global Font Overrides */
+  --bs-body-font-family: Georgia, "Times New Roman", Times, serif !important;
+  --bs-font-sans-serif: Georgia, "Times New Roman", Times, serif !important;
+  --bs-btn-font-family: Georgia, "Times New Roman", Times, serif !important;
+
+  /* Compatibility Aliases */
+  --primary-blue: #111111;
+  --primary-blue-hover: #000000;
+  --brand-blue: #111111;
+  --brand-blue-light: #f7f7f7;
+  --brand-slate: #222222;
+  --brand-slate-bg: #ffffff;
+  --brand-slate-border: #ebebeb;
+  --brand-emerald: #111111;
+  --brand-emerald-light: #f7f7f7;
+  --brand-emerald-border: #dddddd;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Enforce Georgia / Times New Roman universally across every single element */
+html,
+body,
+div,
+span,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+a,
+small,
+strong,
+b,
+u,
+ol,
+ul,
+li,
+form,
+label,
+table,
+tbody,
+thead,
+tr,
+th,
+td,
+footer,
+header,
+nav,
+input,
+button,
+select,
+textarea,
+.btn,
+.navbar,
+.card,
+.nav-link,
+.dropdown-item,
+.form-control,
+.form-select,
+.badge {
+  font-family: Georgia, "Times New Roman", Times, serif !important;
+}
+
+/* CRITICAL: Ensure icon fonts NEVER inherit serif text fonts and NEVER render as [ ] */
+.fa,
+.fas,
+.far,
+.fal,
+.fad,
+.fab,
+.fa-solid,
+.fa-regular,
+.fa-brands,
+[class^="fa-"],
+[class*=" fa-"],
+.bi,
+[class^="bi-"],
+[class*=" bi-"] {
+  font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", bootstrap-icons !important;
+  font-style: normal !important;
+  display: inline-block;
+  line-height: 1;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  color: var(--text-primary);
+  background-color: var(--bg-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: var(--dark-bg);
-  color: var(--text-primary);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Space Grotesk', var(--font-sans);
-  font-weight: 700;
-  color: #fff;
+/* --------------------------------------------------------------------------
+   Layout Containers
+   -------------------------------------------------------------------------- */
+.main-wrapper {
+  flex: 1 0 auto;
+  width: 100%;
 }
 
-/* Custom Navbar */
-.navbar-custom {
-  background-color: rgba(11, 19, 41, 0.85);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border-subtle);
-  padding: 0.85rem 0;
+.listings-page-wrapper {
+  width: 100%;
+  max-width: 1780px;
+  margin: 0 auto;
+  padding: 1.25rem 3rem 3rem;
 }
 
-.navbar-brand {
-  font-family: 'Space Grotesk', sans-serif;
-  font-weight: 800;
-  font-size: 1.4rem;
-  color: #fff !important;
-  display: flex;
+.form-page-container {
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem 3.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   Universal ParkSphere Oval Pill Button System
+   -------------------------------------------------------------------------- */
+.nav-btn,
+.btn-brand-primary,
+.btn-brand-outline,
+.btn-primary,
+.btn-outline-primary,
+.signup-btn,
+.add-btn {
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+  border-radius: var(--radius-pill) !important;
+  font-weight: 600 !important;
+  font-size: 0.92rem !important;
+  padding: 0.48rem 1.4rem !important;
+  text-decoration: none !important;
+  transition: all 0.22s ease !important;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
-.brand-icon {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  color: #fff;
-  padding: 0.4rem 0.6rem;
-  border-radius: 8px;
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+/* Solid Black Oval Button */
+.nav-btn-primary,
+.btn-brand-primary,
+.btn-primary,
+.signup-btn,
+.add-btn {
+  background-color: var(--brand-black) !important;
+  color: #ffffff !important;
+  border: 1.5px solid var(--brand-black) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
-.nav-link {
-  color: var(--text-muted) !important;
-  font-weight: 600;
-  font-size: 0.95rem;
-  transition: color 0.15s ease-in-out;
+.nav-btn-primary:hover,
+.btn-brand-primary:hover,
+.btn-primary:hover,
+.signup-btn:hover,
+.add-btn:hover {
+  background-color: var(--brand-black-hover) !important;
+  border-color: var(--brand-black-hover) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
 }
 
-.nav-link:hover, .nav-link.active {
-  color: #fff !important;
+.nav-btn-primary:active,
+.btn-brand-primary:active,
+.btn-primary:active,
+.signup-btn:active,
+.add-btn:active {
+  transform: translateY(0);
 }
 
-/* Cards */
+/* Outline Black & White Oval Button */
+.nav-btn-outline,
+.btn-brand-outline,
+.btn-outline-primary {
+  background-color: #ffffff !important;
+  color: var(--brand-black) !important;
+  border: 1.5px solid var(--brand-black) !important;
+}
+
+.nav-btn-outline:hover,
+.btn-brand-outline:hover,
+.btn-outline-primary:hover {
+  background-color: var(--brand-black) !important;
+  color: #ffffff !important;
+  border-color: var(--brand-black) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+/* Small Variant */
+.nav-btn.btn-sm,
+.btn-brand-primary.btn-sm,
+.btn-brand-outline.btn-sm,
+.btn-primary.btn-sm,
+.btn-outline-primary.btn-sm {
+  padding: 0.35rem 1rem !important;
+  font-size: 0.85rem !important;
+}
+
+/* --------------------------------------------------------------------------
+   Cards & Parking Slots Visualizer
+   -------------------------------------------------------------------------- */
 .card-custom {
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-  color: var(--text-primary);
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  background-color: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-card);
+  transition: all 0.25s ease;
 }
 
 .card-custom:hover {
-  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: var(--shadow-md);
 }
 
-/* Hero Section */
-.hero-section {
-  background: radial-gradient(ellipse at top, #162646 0%, #0b1329 70%);
-  padding: 5rem 0 4rem 0;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-/* Badges */
-.badge-status {
-  padding: 0.4em 0.75em;
-  font-size: 0.75rem;
-  font-weight: 700;
-  border-radius: 50px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.badge-confirmed {
-  background-color: rgba(16, 185, 129, 0.15);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.badge-active {
-  background-color: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
-  border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
-.badge-completed {
-  background-color: rgba(148, 163, 184, 0.15);
-  color: #94a3b8;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-}
-
-.badge-cancelled {
-  background-color: rgba(239, 68, 68, 0.15);
-  color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-/* Slot Interactive Grid */
-.slot-badge-available {
-  background-color: rgba(16, 185, 129, 0.15);
-  color: #34d399;
-  border: 1px solid #10b981;
-  cursor: pointer;
-  padding: 0.5rem;
+.slot-item {
   border-radius: 8px;
-  text-align: center;
-  transition: all 0.15s ease;
+  padding: 0.5rem 0.25rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  user-select: none;
 }
 
-.slot-badge-available:hover {
-  background-color: #10b981;
-  color: #fff;
+.slot-badge-available {
+  background-color: #f0fdf4;
+  color: #166534;
+  border: 1.5px solid #bbf7d0;
+}
+
+.slot-badge-available:hover,
+.slot-item.selected {
+  background-color: #111111 !important;
+  color: #ffffff !important;
+  border-color: #111111 !important;
   transform: scale(1.05);
 }
 
 .slot-badge-occupied {
-  background-color: rgba(239, 68, 68, 0.15);
-  color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  padding: 0.5rem;
-  border-radius: 8px;
-  text-align: center;
-  opacity: 0.6;
+  background-color: #fef2f2;
+  color: #991b1b;
+  border: 1.5px solid #fecaca;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .slot-badge-maintenance {
-  background-color: rgba(245, 158, 11, 0.15);
-  color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  padding: 0.5rem;
-  border-radius: 8px;
-  text-align: center;
+  background-color: #fffbeb;
+  color: #92400e;
+  border: 1.5px solid #fde68a;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
-/* Form inputs on dark mode */
-.form-control, .form-select {
-  background-color: #162646 !important;
-  border: 1px solid var(--border-subtle) !important;
-  color: #fff !important;
-  border-radius: 8px;
-  padding: 0.65rem 0.9rem;
+/* --------------------------------------------------------------------------
+   Sticky Booking Box (Show Page)
+   -------------------------------------------------------------------------- */
+.sticky-booking-card {
+  position: sticky;
+  top: 96px;
+  background-color: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
-.form-control:focus, .form-select:focus {
-  border-color: var(--primary-blue) !important;
-  box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25) !important;
+.fee-breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.45rem;
+  font-size: 0.92rem;
+  color: var(--text-secondary);
 }
 
-.form-control::placeholder {
-  color: var(--text-muted);
+.fee-breakdown-total {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid var(--border-light);
+  padding-top: 0.65rem;
+  margin-top: 0.65rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
-/* Footer */
+/* --------------------------------------------------------------------------
+   Flash Messages & Footer
+   -------------------------------------------------------------------------- */
+.flash-container {
+  width: min(100% - 2rem, 760px);
+  margin: 1.25rem auto 0;
+}
+
+.flash-container .alert {
+  margin-bottom: 1rem;
+  border-radius: 10px;
+  padding: 0.9rem 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
 footer {
   margin-top: auto;
-  background-color: #080d1a;
-  border-top: 1px solid var(--border-subtle);
-  padding: 2.5rem 0 1.5rem 0;
-  color: var(--text-muted);
+  background-color: var(--bg-muted);
+  border-top: 1px solid var(--border-light);
+}
+
+.f-info {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
   font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.f-socials i {
+  font-size: 1.25rem;
+  margin: 0 0.6rem;
+  color: #484848;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.f-socials i:hover {
+  color: var(--brand-black);
+}
+
+.f-info-links a {
+  text-decoration: none;
+  color: var(--text-secondary);
+  margin: 0 0.5rem;
+}
+
+.f-info-links a:hover {
+  text-decoration: underline;
+  color: var(--text-primary);
 }

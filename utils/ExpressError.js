@@ -1,4 +1,4 @@
-// Custom ExpressError class for friendly, controlled error handling across controllers
+// Custom error class to attach HTTP status codes to errors
 class ExpressError extends Error {
   constructor(statusCode, message) {
     super();

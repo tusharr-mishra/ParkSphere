@@ -1,3 +1,4 @@
+// Parking Controller: handles parking facility catalog, search, facility details, and reviews
 const Facility = require('../models/facility');
 const Slot = require('../models/slot');
 const Vehicle = require('../models/vehicle');
@@ -5,136 +6,183 @@ const Review = require('../models/review');
 const Reservation = require('../models/reservation');
 const ExpressError = require('../utils/ExpressError');
 
-/**
- * Browse and search facilities with filtering
- */
+// Display parking catalog with search and filters
 module.exports.index = async (req, res, next) => {
   try {
-    const { city, isEV, maxPrice, sort } = req.query;
-    const filter = { isActive: true };
+    const { city, isEV, maxPrice, sort, category } = req.query;
 
+    // Filter only operational facilities
+    const databaseQueryFilter = { isActive: true };
+
+    // Case-insensitive regex search by city name
     if (city && city.trim() !== '') {
-      filter.city = new RegExp(city.trim(), 'i');
+      databaseQueryFilter.city = new RegExp(city.trim(), 'i');
     }
 
+    // Optional ceiling filter for hourly rate
     if (maxPrice && !isNaN(maxPrice)) {
-      filter['pricing.hourlyRate'] = { $lte: Number(maxPrice) };
+      databaseQueryFilter['pricing.hourlyRate'] = { $lte: Number(maxPrice) };
     }
 
-    let query = Facility.find(filter);
+    // Amenity categorization (EV Charging, Covered Garages, CCTV Surveillance)
+    if (isEV === 'true' || category === 'EV Charging') {
+      databaseQueryFilter.amenities = { $in: ['EV_CHARGING', 'EV'] };
+    } else if (category === 'Covered Garages') {
+      databaseQueryFilter.amenities = { $in: ['COVERED'] };
+    } else if (category === 'CCTV Secured') {
+      databaseQueryFilter.amenities = { $in: ['CCTV', 'SECURITY_24_7'] };
+    }
 
+    let facilitiesQuery = Facility.find(databaseQueryFilter);
+
+    // Apply sorting rules
     if (sort === 'price_asc') {
-      query = query.sort({ 'pricing.hourlyRate': 1 });
+      facilitiesQuery = facilitiesQuery.sort({ 'pricing.hourlyRate': 1 });
     } else if (sort === 'price_desc') {
-      query = query.sort({ 'pricing.hourlyRate': -1 });
+      facilitiesQuery = facilitiesQuery.sort({ 'pricing.hourlyRate': -1 });
     } else {
-      query = query.sort({ createdAt: -1 });
+      facilitiesQuery = facilitiesQuery.sort({ createdAt: -1 });
     }
 
-    const facilities = await query.exec();
+    const matchedFacilities = await facilitiesQuery.exec();
 
     res.render('pages/parking/index', {
-      facilities,
-      searchQuery: { city: city || '', isEV: !!isEV, maxPrice: maxPrice || '', sort: sort || '' },
-      title: 'Find Parking Facilities - ParkSphere',
+      facilities: matchedFacilities,
+      category: category || 'Popular',
+      searchQuery: {
+        city: city || '',
+        isEV: isEV === 'true',
+        maxPrice: maxPrice || '',
+        sort: sort || '',
+      },
+      title: 'ParkSphere | Smart Parking Platform',
     });
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
   }
 };
 
-/**
- * View facility details, slot inventory, and booking modal
- */
+// Show single facility details, bays, and reviews
 module.exports.show = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const facility = await Facility.findById(id).populate('operator', 'name email');
+    const facilityId = req.params.id;
 
-    if (!facility) {
+    const targetFacility = await Facility.findById(facilityId).populate(
+      'operator',
+      'name email'
+    );
+
+    if (!targetFacility) {
       req.flash('error', 'Parking facility not found.');
       return res.redirect('/parking');
     }
 
-    // Load physical slots for this facility
-    const slots = await Slot.find({ facility: facility._id }).sort({ slotNumber: 1 });
+    const facilitySlots = await Slot.find({ facility: targetFacility._id }).sort({
+      slotNumber: 1,
+    });
 
-    // Load customer's registered vehicles if logged in
-    let userVehicles = [];
+    let customerVehicles = [];
     if (req.session.user) {
-      userVehicles = await Vehicle.find({ user: req.session.user._id });
+      customerVehicles = await Vehicle.find({ user: req.session.user._id });
     }
 
-    // Load facility reviews
-    const reviews = await Review.find({ facility: facility._id }).populate('user', 'name').sort({ createdAt: -1 });
+    const facilityReviews = await Review.find({ facility: targetFacility._id })
+      .populate('user', 'name')
+      .sort({ createdAt: -1 });
 
     res.render('pages/parking/show', {
-      facility,
-      slots,
-      userVehicles,
-      reviews,
-      title: `${facility.name} - ParkSphere`,
+      facility: targetFacility,
+      slots: facilitySlots,
+      userVehicles: customerVehicles,
+      reviews: facilityReviews,
+      title: `${targetFacility.name} - ParkSphere`,
     });
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
   }
 };
 
-/**
- * API / Helper to check slot availability for a specified time interval
- * Overlap Rule: existing.startTime < requestedEnd AND existing.endTime > requestedStart
- * Blocking Statuses: CONFIRMED, ACTIVE, PENDING (unexpired)
- */
+// API: Check slot availability for a time window
 module.exports.getAvailableSlots = async (req, res, next) => {
   try {
     const { facilityId } = req.params;
     const { startTime, endTime, isEV, vehicleType } = req.query;
 
     if (!startTime || !endTime) {
-      return res.status(400).json({ success: false, message: 'Start time and end time are required' });
+      return res.status(400).json({
+        success: false,
+        message: 'Start time and end time are required.',
+      });
     }
 
-    const start = new Date(startTime);
-    const end = new Date(endTime);
+    const requestedStart = new Date(startTime);
+    const requestedEnd = new Date(endTime);
 
-    if (isNaN(start) || isNaN(end) || start >= end) {
-      return res.status(400).json({ success: false, message: 'Invalid start or end date interval' });
+    if (isNaN(requestedStart) || isNaN(requestedEnd) || requestedStart >= requestedEnd) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid date window: End time must be after start time.',
+      });
     }
 
-    // 1. Find all active reservations that overlap the requested interval
-    const blockingReservations = await Reservation.find({
+    // Find bookings that overlap: existing.start < requestedEnd && existing.end > requestedStart
+    const overlappingBookings = await Reservation.find({
       facility: facilityId,
       status: { $in: ['CONFIRMED', 'ACTIVE', 'PENDING'] },
-      startTime: { $lt: end },
-      endTime: { $gt: start },
+      startTime: { $lt: requestedEnd },
+      endTime: { $gt: requestedStart },
     }).select('slot');
 
-    const bookedSlotIds = blockingReservations.map((r) => r.slot.toString());
+    const blockedSlotIds = overlappingBookings.map((booking) => booking.slot.toString());
 
-    // 2. Fetch available slots matching vehicle attributes
-    const slotFilter = {
+    const slotCriteria = {
       facility: facilityId,
       status: 'AVAILABLE',
-      _id: { $nin: bookedSlotIds },
+      _id: { $nin: blockedSlotIds },
     };
 
     if (isEV === 'true') {
-      slotFilter.isEV = true;
+      slotCriteria.isEV = true;
     }
     if (vehicleType && vehicleType !== 'ALL') {
-      slotFilter.slotType = vehicleType;
+      slotCriteria.slotType = vehicleType;
     }
 
-    const availableSlots = await Slot.find(slotFilter).sort({ slotNumber: 1 });
+    const openSlots = await Slot.find(slotCriteria).sort({ slotNumber: 1 });
 
     res.json({
       success: true,
       data: {
-        totalAvailable: availableSlots.length,
-        slots: availableSlots,
+        totalAvailable: openSlots.length,
+        slots: openSlots,
       },
     });
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Create a review
+module.exports.createReview = async (req, res, next) => {
+  try {
+    const facilityId = req.params.id;
+    const { rating, comment } = req.body;
+
+    if (!req.session.user) {
+      req.flash('error', 'Please sign in to post a review.');
+      return res.redirect(`/parking/${facilityId}`);
+    }
+
+    await Review.create({
+      facility: facilityId,
+      user: req.session.user._id,
+      rating: Number(rating) || 5,
+      comment: (comment || 'Smooth, clean and hassle-free parking experience!').trim(),
+    });
+
+    req.flash('success', 'Thank you! Your verified review has been submitted.');
+    res.redirect(`/parking/${facilityId}`);
+  } catch (error) {
+    next(error);
   }
 };

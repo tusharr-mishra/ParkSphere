@@ -1,9 +1,7 @@
+// Middleware: authentication and role-based access control guards
 const ExpressError = require('./utils/ExpressError');
 
-/**
- * Authentication Middleware: Protects routes requiring user sign-in.
- * Preserves the destination URL so users return to their intended page upon login.
- */
+// Ensure user is signed in, preserving original destination URL
 const isLoggedIn = (req, res, next) => {
   if (!req.session.user) {
     req.session.redirectUrl = req.originalUrl;
@@ -13,9 +11,7 @@ const isLoggedIn = (req, res, next) => {
   next();
 };
 
-/**
- * Middleware to pass saved return URL to template locals before login redirect
- */
+// Expose return URL to template locals
 const saveRedirectUrl = (req, res, next) => {
   if (req.session.redirectUrl) {
     res.locals.redirectUrl = req.session.redirectUrl;
@@ -23,9 +19,7 @@ const saveRedirectUrl = (req, res, next) => {
   next();
 };
 
-/**
- * Role-Based Access Control: Operators & Admins only
- */
+// Check if user is an Operator or Admin
 const isOperator = (req, res, next) => {
   if (!req.session.user) {
     req.flash('error', 'Please log in first.');
@@ -38,9 +32,7 @@ const isOperator = (req, res, next) => {
   next();
 };
 
-/**
- * Role-Based Access Control: Platform Administrators only
- */
+// Check if user is an Admin
 const isAdmin = (req, res, next) => {
   if (!req.session.user) {
     req.flash('error', 'Please log in first.');

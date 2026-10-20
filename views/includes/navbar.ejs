@@ -1,55 +1,84 @@
-<nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top">
-  <div class="container">
-    <a class="navbar-brand" href="/">
-      <span class="brand-icon"><i class="bi bi-p-square-fill"></i></span>
-      Park<span>Sphere</span>
+<nav class="navbar navbar-expand-md sticky-top">
+  <div class="container-fluid">
+
+    <!-- Brand Logo & Name (ParkSphere written big in Georgia) -->
+    <a class="navbar-brand" href="/parking" aria-label="ParkSphere Home">
+      <i class="fa-solid fa-square-parking brand-icon"></i>
+      <span class="brand-name">ParkSphere</span>
     </a>
-    
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#parkNavbar" aria-controls="parkNavbar" aria-expanded="false" aria-label="Toggle navigation">
+
+    <!-- Mobile Toggle Button -->
+    <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse"
+      data-bs-target="#navbarMainCollapse" aria-controls="navbarMainCollapse" aria-expanded="false"
+      aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    
-    <div class="collapse navbar-collapse" id="parkNavbar">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
-        <li class="nav-item">
-          <a class="nav-link" href="/parking"><i class="bi bi-compass me-1"></i> Find Parking</a>
-        </li>
-        <% if (currentUser) { %>
-          <li class="nav-item">
-            <a class="nav-link" href="/customer/dashboard"><i class="bi bi-speedometer2 me-1"></i> Dashboard</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/customer/bookings"><i class="bi bi-calendar-check me-1"></i> My Bookings</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/customer/vehicles"><i class="bi bi-car-front me-1"></i> Vehicles</a>
-          </li>
-          <% if (currentUser.role === 'OPERATOR' || currentUser.role === 'ADMIN') { %>
-            <li class="nav-item">
-              <a class="nav-link text-warning" href="/operator/dashboard"><i class="bi bi-building-gear me-1"></i> Operator Console</a>
-            </li>
-          <% } %>
-          <% if (currentUser.role === 'ADMIN') { %>
-            <li class="nav-item">
-              <a class="nav-link text-info" href="/admin/dashboard"><i class="bi bi-shield-lock me-1"></i> Admin</a>
-            </li>
-          <% } %>
-        <% } %>
-      </ul>
-      
-      <div class="d-flex align-items-center gap-2">
-        <% if (!currentUser) { %>
-          <a href="/login" class="btn btn-outline-light btn-sm px-3">Sign In</a>
-          <a href="/register" class="btn btn-primary btn-sm px-3">Register</a>
+
+    <!-- Navbar Content -->
+    <div class="collapse navbar-collapse" id="navbarMainCollapse">
+
+      <!-- Center Search Bar (ParkSphere 3-Segment Capsule) -->
+      <form class="navbar-search-pill mx-md-auto my-2 my-md-0" action="/parking" method="GET" role="search"
+        aria-label="Search parking facilities by city">
+        <span class="search-segment-btn d-none d-lg-inline">Any City</span>
+        <span class="search-divider d-none d-lg-inline"></span>
+        <span class="search-segment-btn d-none d-lg-inline">Any Bay</span>
+        <span class="search-divider d-none d-lg-inline"></span>
+        <div class="search-input-wrap">
+          <input type="text" name="city" class="search-input" placeholder="Search facilities or city..."
+            aria-label="Search facilities" value="<%= (typeof searchQuery !== 'undefined' && searchQuery.city) ? searchQuery.city : '' %>">
+          <button type="submit" class="search-button" aria-label="Search parking">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </button>
+        </div>
+      </form>
+
+      <!-- Right Navigation Actions (ParkSphere Oval Buttons) -->
+      <div class="navbar-right-actions ms-md-auto mt-3 mt-md-0">
+        <% const user = (typeof currentUser !== 'undefined' && currentUser) ? currentUser : (typeof locals !== 'undefined' && locals.currentUser ? locals.currentUser : null); %>
+        <% if (!user) { %>
+          <a class="nav-btn nav-btn-outline" href="/operator/dashboard">
+            Operator Portal
+          </a>
+
+          <button type="button" class="nav-globe-btn align-self-center"
+            title="Language & Region" aria-label="Choose language">
+            <i class="fa-solid fa-globe"></i>
+          </button>
+
+          <a class="nav-btn nav-btn-outline" href="/login">
+            Sign In
+          </a>
+
+          <a class="nav-btn nav-btn-primary" href="/register">
+            Register
+          </a>
         <% } else { %>
-          <span class="badge bg-secondary me-2 p-2">
-            <i class="bi bi-person-circle me-1"></i> <%= currentUser.name %> (<%= currentUser.role %>)
-          </span>
-          <a href="/logout" class="btn btn-outline-danger btn-sm">
-            <i class="bi bi-box-arrow-right"></i> Logout
+          <% if (user.role === 'OPERATOR' || user.role === 'ADMIN') { %>
+            <a class="nav-btn nav-btn-outline" href="/operator/dashboard">
+              Gate Console
+            </a>
+          <% } %>
+
+          <a class="nav-btn nav-btn-outline" href="/customer/bookings">
+            My Bookings
+          </a>
+
+          <a class="nav-btn nav-btn-outline" href="/customer/vehicles">
+            Vehicles
+          </a>
+
+          <div class="user-badge d-none d-md-inline-flex" title="Active Account">
+            <i class="fa-solid fa-circle-user text-dark"></i>
+            <span><%= user.name || user.email %></span>
+          </div>
+
+          <a href="/logout" class="nav-btn nav-btn-primary text-decoration-none">
+            Log Out
           </a>
         <% } %>
       </div>
+
     </div>
   </div>
 </nav>

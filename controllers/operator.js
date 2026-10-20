@@ -1,97 +1,114 @@
+// Operator Controller: handles facility operations, gate queue, and slot maintenance
 const Facility = require('../models/facility');
 const Slot = require('../models/slot');
 const Reservation = require('../models/reservation');
 const AuditLog = require('../models/auditLog');
 
+// Operator dashboard with live gate queue and metrics
 module.exports.dashboard = async (req, res, next) => {
   try {
-    const userId = req.session.user._id;
-    const filter = req.session.user.role === 'ADMIN' ? {} : { operator: userId };
+    const currentUserId = req.session.user._id;
 
-    const facilities = await Facility.find(filter);
-    const facilityIds = facilities.map((f) => f._id);
+    // Platform administrators can inspect all facilities; operators only see assigned ones
+    const facilityFilter = req.session.user.role === 'ADMIN' ? {} : { operator: currentUserId };
 
-    const [totalSlots, activeReservationsCount, todayCompleted] = await Promise.all([
-      Slot.countDocuments({ facility: { $in: facilityIds } }),
-      Reservation.countDocuments({ facility: { $in: facilityIds }, status: 'ACTIVE' }),
-      Reservation.countDocuments({ facility: { $in: facilityIds }, status: 'COMPLETED' }),
+    const managedFacilities = await Facility.find(facilityFilter);
+    const managedFacilityIds = managedFacilities.map((facility) => facility._id);
+
+    // Compute live operational KPIs across all assigned facilities
+    const [totalBaysCount, activeParkedCarsCount, todayCompletedCount] = await Promise.all([
+      Slot.countDocuments({ facility: { $in: managedFacilityIds } }),
+      Reservation.countDocuments({ facility: { $in: managedFacilityIds }, status: 'ACTIVE' }),
+      Reservation.countDocuments({ facility: { $in: managedFacilityIds }, status: 'COMPLETED' }),
     ]);
 
-    const activeBookings = await Reservation.find({ facility: { $in: facilityIds }, status: { $in: ['CONFIRMED', 'ACTIVE'] } })
-      .populate('facility', 'name')
+    // Retrieve active and incoming reservations requiring gate check-in or check-out
+    const activeGateBookings = await Reservation.find({
+      facility: { $in: managedFacilityIds },
+      status: { $in: ['CONFIRMED', 'ACTIVE'] },
+    })
+      .populate('facility', 'name address city')
       .populate('slot', 'slotNumber')
       .populate('user', 'name email')
       .populate('vehicle', 'registrationNumber vehicleType')
       .sort({ startTime: 1 });
 
     res.render('pages/operator/dashboard', {
-      facilities,
+      facilities: managedFacilities,
       stats: {
-        totalFacilities: facilities.length,
-        totalSlots,
-        activeReservationsCount,
-        todayCompleted,
+        totalFacilities: managedFacilities.length,
+        totalSlots: totalBaysCount,
+        activeReservationsCount: activeParkedCarsCount,
+        todayCompleted: todayCompletedCount,
       },
-      activeBookings,
+      activeBookings: activeGateBookings,
       title: 'Operator Dashboard - ParkSphere',
     });
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
   }
 };
 
+// View bay inventory and maintenance state for a facility
 module.exports.manageSlots = async (req, res, next) => {
   try {
     const { facilityId } = req.query;
-    const userId = req.session.user._id;
+    const currentUserId = req.session.user._id;
 
-    const facilities = await Facility.find(req.session.user.role === 'ADMIN' ? {} : { operator: userId });
-    const selectedFacilityId = facilityId || (facilities[0] ? facilities[0]._id : null);
+    const facilityFilter = req.session.user.role === 'ADMIN' ? {} : { operator: currentUserId };
+    const managedFacilities = await Facility.find(facilityFilter);
 
-    let slots = [];
+    // Default to the first available facility if no specific facilityId query param is provided
+    const targetFacilityId = facilityId || (managedFacilities[0] ? managedFacilities[0]._id : null);
+
+    let slotsList = [];
     let selectedFacility = null;
 
-    if (selectedFacilityId) {
-      selectedFacility = await Facility.findById(selectedFacilityId);
-      slots = await Slot.find({ facility: selectedFacilityId }).sort({ slotNumber: 1 });
+    if (targetFacilityId) {
+      selectedFacility = await Facility.findById(targetFacilityId);
+      slotsList = await Slot.find({ facility: targetFacilityId }).sort({ slotNumber: 1 });
     }
 
     res.render('pages/operator/slots', {
-      facilities,
+      facilities: managedFacilities,
       selectedFacility,
-      slots,
+      slots: slotsList,
       title: 'Slot State & Inventory - ParkSphere',
     });
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
   }
 };
 
+// Toggle bay status between AVAILABLE and MAINTENANCE
 module.exports.toggleSlotStatus = async (req, res, next) => {
   try {
     const { slotId } = req.params;
-    const slot = await Slot.findById(slotId);
+    const currentUserId = req.session.user._id;
 
-    if (!slot) {
-      req.flash('error', 'Slot not found.');
+    const targetSlot = await Slot.findById(slotId);
+    if (!targetSlot) {
+      req.flash('error', 'Target parking slot not found.');
       return res.redirect('/operator/slots');
     }
 
-    const newStatus = slot.status === 'AVAILABLE' ? 'MAINTENANCE' : 'AVAILABLE';
-    slot.status = newStatus;
-    await slot.save();
+    // Toggle: if currently AVAILABLE, switch to MAINTENANCE; otherwise restore to AVAILABLE
+    const updatedStatus = targetSlot.status === 'AVAILABLE' ? 'MAINTENANCE' : 'AVAILABLE';
+    targetSlot.status = updatedStatus;
+    await targetSlot.save();
 
+    // Record this operational mutation in the immutable audit log
     await AuditLog.create({
-      actor: req.session.user._id,
+      actor: currentUserId,
       action: 'TOGGLE_SLOT_STATUS',
       entityType: 'Slot',
-      entityId: slot._id.toString(),
-      metadata: { slotNumber: slot.slotNumber, status: newStatus },
+      entityId: targetSlot._id.toString(),
+      metadata: { slotNumber: targetSlot.slotNumber, status: updatedStatus },
     });
 
-    req.flash('success', `Slot ${slot.slotNumber} status changed to ${newStatus}.`);
-    res.redirect(`/operator/slots?facilityId=${slot.facility}`);
-  } catch (err) {
-    next(err);
+    req.flash('success', `Bay ${targetSlot.slotNumber} status switched to ${updatedStatus}.`);
+    res.redirect(`/operator/slots?facilityId=${targetSlot.facility}`);
+  } catch (error) {
+    next(error);
   }
 };

@@ -1,22 +1,22 @@
 <% layout('layouts/boilerplate') %>
 
 <div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 pb-2 border-bottom">
     <div>
-      <h2 class="fw-bold mb-1">Slot Bay Management</h2>
-      <p class="text-muted small mb-0">Toggle slot maintenance modes and review bay status in real-time</p>
+      <h2 class="fw-bold mb-1" style="color: var(--brand-slate);">Slot Bay Management</h2>
+      <p class="text-secondary small mb-0">Toggle slot maintenance modes and review bay status in real-time</p>
     </div>
     <a href="/operator/dashboard" class="btn btn-outline-secondary btn-sm">
-      &larr; Back to Gate Console
+      <i class="fa-solid fa-chevron-left me-1"></i> Back to Gate Console
     </a>
   </div>
 
   <!-- Facility Selector -->
   <% if (facilities.length > 1) { %>
-    <div class="card card-custom p-3 mb-4">
+    <div class="card p-3 mb-4 border shadow-sm" style="border-radius: 12px; background-color: #ffffff;">
       <form action="/operator/slots" method="GET" class="d-flex align-items-center gap-3">
-        <label class="form-label text-muted small fw-semibold mb-0">Select Facility:</label>
-        <select name="facilityId" class="form-select form-select-sm" style="max-width: 300px;" onchange="this.form.submit()">
+        <label class="form-label text-secondary small fw-semibold mb-0">Select Facility:</label>
+        <select name="facilityId" class="form-select form-select-sm" style="max-width: 320px;" onchange="this.form.submit()">
           <% for (let f of facilities) { %>
             <option value="<%= f._id %>" <%= selectedFacility && selectedFacility._id.toString() === f._id.toString() ? 'selected' : '' %>>
               <%= f.name %> (<%= f.city %>)
@@ -28,21 +28,21 @@
   <% } %>
 
   <% if (!selectedFacility) { %>
-    <div class="card card-custom p-5 text-center">
-      <h5 class="fw-bold">No Facility Selected</h5>
-      <p class="text-muted small">You do not have any assigned facilities yet.</p>
+    <div class="card p-5 text-center border-0 shadow-sm" style="border-radius: 16px; background-color: #ffffff;">
+      <h5 class="fw-bold" style="color: var(--brand-slate);">No Facility Selected</h5>
+      <p class="text-secondary small">You do not have any assigned facilities currently.</p>
     </div>
   <% } else { %>
-    <div class="card card-custom p-4">
-      <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="card p-4 border shadow-sm" style="border-radius: 14px; background-color: #ffffff;">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 pb-3 border-bottom">
         <div>
-          <h4 class="fw-bold text-white mb-0"><%= selectedFacility.name %></h4>
-          <span class="text-muted small"><%= selectedFacility.address %>, <%= selectedFacility.city %></span>
+          <h4 class="fw-bold mb-0" style="color: var(--brand-slate);"><%= selectedFacility.name %></h4>
+          <span class="text-secondary small"><i class="fa-solid fa-location-dot text-danger me-1"></i><%= selectedFacility.address %>, <%= selectedFacility.city %></span>
         </div>
         <div class="d-flex gap-2">
-          <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">Available</span>
-          <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25">Occupied</span>
-          <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-25">Maintenance</span>
+          <span class="badge" style="background-color: var(--brand-emerald-light); color: var(--brand-emerald); border: 1px solid var(--brand-emerald-border);">Available</span>
+          <span class="badge" style="background-color: var(--accent-occupied-bg); color: var(--accent-occupied); border: 1px solid var(--accent-occupied-border);">Occupied</span>
+          <span class="badge" style="background-color: var(--accent-maint-bg); color: var(--accent-maint); border: 1px solid var(--accent-maint-border);">Maintenance</span>
         </div>
       </div>
 
@@ -50,24 +50,24 @@
       <div class="row g-3">
         <% for (let s of slots) { %>
           <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-            <div class="card p-3 text-center" style="background-color: #0b1329; border: 1px solid var(--border-subtle); border-radius: 10px;">
-              <div class="fs-5 fw-bold text-white mb-1"><%= s.slotNumber %></div>
-              <div class="small text-muted mb-2"><%= s.slotType %> <%= s.isEV ? '⚡' : '' %></div>
+            <div class="card p-3 text-center border shadow-sm h-100" style="border-radius: 12px; background-color: #f8fafc;">
+              <div class="fs-5 fw-bold mb-1" style="color: var(--brand-slate);"><%= s.slotNumber %></div>
+              <div class="small text-secondary mb-2"><%= s.slotType %> <%= s.isEV ? '⚡ EV' : '' %></div>
               
               <div class="mb-2">
                 <% if (s.status === 'AVAILABLE') { %>
-                  <span class="badge bg-success small">AVAILABLE</span>
+                  <span class="badge" style="background-color: var(--brand-emerald-light); color: var(--brand-emerald); border: 1px solid var(--brand-emerald-border);">AVAILABLE</span>
                 <% } else if (s.status === 'OCCUPIED') { %>
-                  <span class="badge bg-danger small">OCCUPIED</span>
+                  <span class="badge" style="background-color: var(--accent-occupied-bg); color: var(--accent-occupied); border: 1px solid var(--accent-occupied-border);">OCCUPIED</span>
                 <% } else { %>
-                  <span class="badge bg-warning text-dark small">MAINTENANCE</span>
+                  <span class="badge" style="background-color: var(--accent-maint-bg); color: var(--accent-maint); border: 1px solid var(--accent-maint-border);">MAINTENANCE</span>
                 <% } %>
               </div>
 
               <!-- Toggle Form -->
-              <form action="/operator/slots/<%= s._id %>/toggle" method="POST">
-                <button type="submit" class="btn btn-outline-secondary btn-sm py-0 px-2" style="font-size: 0.75rem;" <%= s.status === 'OCCUPIED' ? 'disabled' : '' %>>
-                  <%= s.status === 'MAINTENANCE' ? 'Set Open' : 'Set Maint' %>
+              <form action="/operator/slots/<%= s._id %>/toggle" method="POST" class="mt-auto">
+                <button type="submit" class="btn btn-outline-secondary btn-sm py-1 px-2 w-100" style="font-size: 0.75rem;" <%= s.status === 'OCCUPIED' ? 'disabled' : '' %>>
+                  <%= s.status === 'MAINTENANCE' ? 'Set Available' : 'Set Maint' %>
                 </button>
               </form>
             </div>

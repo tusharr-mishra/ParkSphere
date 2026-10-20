@@ -1,3 +1,4 @@
+// Slot Model: individual parking bay with type, EV status, and operational state
 const mongoose = require('mongoose');
 
 const slotSchema = new mongoose.Schema(
@@ -33,7 +34,7 @@ const slotSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Compound unique index ensuring each slot number is unique within its facility
+// Ensure slot numbers are unique per facility
 slotSchema.index({ facility: 1, slotNumber: 1 }, { unique: true });
 
 module.exports = mongoose.model('Slot', slotSchema);

@@ -1,54 +1,54 @@
 <% layout('layouts/boilerplate') %>
 
 <div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 pb-2 border-bottom">
     <div>
-      <h2 class="fw-bold mb-1">Customer Dashboard</h2>
-      <p class="text-muted small mb-0">Manage your active reservations, parking history, and vehicles</p>
+      <h2 class="fw-bold mb-1" style="color: var(--brand-slate);">Customer Dashboard</h2>
+      <p class="text-secondary small mb-0">Overview of active parking stays, upcoming reservations, and vehicle profile</p>
     </div>
     <a href="/parking" class="btn btn-primary btn-sm px-3">
-      <i class="bi bi-search me-1"></i> Book New Bay
+      <i class="fa-solid fa-magnifying-glass me-1"></i> Book New Bay
     </a>
   </div>
 
   <!-- Metric Counters -->
   <div class="row g-4 mb-4">
     <div class="col-md-4">
-      <div class="card card-custom p-4">
-        <span class="text-muted small fw-semibold text-uppercase">Active Bookings</span>
-        <h2 class="fw-bold text-success mt-2 mb-0"><%= stats.activeBookingsCount %></h2>
+      <div class="card p-4 border shadow-sm" style="border-radius: 14px; background-color: #ffffff;">
+        <span class="text-secondary small fw-semibold text-uppercase">Active Bookings</span>
+        <h2 class="fw-bold mt-2 mb-0" style="color: var(--brand-emerald);"><%= stats.activeBookingsCount %></h2>
       </div>
     </div>
     <div class="col-md-4">
-      <div class="card card-custom p-4">
-        <span class="text-muted small fw-semibold text-uppercase">Total Completed Stays</span>
-        <h2 class="fw-bold text-white mt-2 mb-0"><%= stats.totalCompleted %></h2>
+      <div class="card p-4 border shadow-sm" style="border-radius: 14px; background-color: #ffffff;">
+        <span class="text-secondary small fw-semibold text-uppercase">Total Completed Stays</span>
+        <h2 class="fw-bold mt-2 mb-0" style="color: var(--brand-slate);"><%= stats.totalCompleted %></h2>
       </div>
     </div>
     <div class="col-md-4">
-      <div class="card card-custom p-4">
-        <span class="text-muted small fw-semibold text-uppercase">Registered Vehicles</span>
-        <h2 class="fw-bold text-primary mt-2 mb-0"><%= stats.vehiclesCount %></h2>
+      <div class="card p-4 border shadow-sm" style="border-radius: 14px; background-color: #ffffff;">
+        <span class="text-secondary small fw-semibold text-uppercase">Registered Vehicles</span>
+        <h2 class="fw-bold mt-2 mb-0" style="color: var(--brand-blue);"><%= stats.vehiclesCount %></h2>
       </div>
     </div>
   </div>
 
   <!-- Recent Bookings Table -->
-  <div class="card card-custom p-4 shadow">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h5 class="fw-bold mb-0 text-white">Recent Reservations</h5>
-      <a href="/customer/bookings" class="small text-primary text-decoration-none">View All &rarr;</a>
+  <div class="card p-4 border shadow-sm" style="border-radius: 14px; background-color: #ffffff;">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+      <h5 class="fw-bold mb-0" style="color: var(--brand-slate);">Recent Reservations</h5>
+      <a href="/customer/bookings" class="small text-decoration-none fw-semibold" style="color: var(--brand-emerald);">View All Reservations &rarr;</a>
     </div>
 
     <% if (recentBookings.length === 0) { %>
-      <div class="text-center py-4 text-muted small">
-        No reservations recorded yet. Browse facilities and book your first spot!
+      <div class="text-center py-4 text-secondary small">
+        No reservations recorded yet. Browse locations and book your first bay!
       </div>
     <% } else { %>
       <div class="table-responsive">
-        <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
-          <thead>
-            <tr class="text-muted small">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr class="text-secondary small text-uppercase">
               <th>Booking Code</th>
               <th>Facility</th>
               <th>Slot</th>
@@ -60,16 +60,16 @@
           <tbody>
             <% for (let b of recentBookings) { %>
               <tr>
-                <td class="fw-bold text-primary"><%= b.bookingCode %></td>
+                <td class="fw-bold" style="color: var(--brand-emerald);"><%= b.bookingCode %></td>
                 <td><%= b.facility ? b.facility.name : 'Facility' %></td>
-                <td><%= b.slot ? b.slot.slotNumber : 'N/A' %></td>
-                <td><%= b.vehicle ? b.vehicle.registrationNumber : 'N/A' %></td>
+                <td><span class="badge" style="background-color: #f1f5f9; color: #334155;">Bay <%= b.slot ? b.slot.slotNumber : 'N/A' %></span></td>
+                <td><strong><%= b.vehicle ? b.vehicle.registrationNumber : 'N/A' %></strong></td>
                 <td>
                   <span class="badge badge-status <%= b.status === 'CONFIRMED' ? 'badge-confirmed' : b.status === 'ACTIVE' ? 'badge-active' : b.status === 'COMPLETED' ? 'badge-completed' : 'badge-cancelled' %>">
                     <%= b.status %>
                   </span>
                 </td>
-                <td class="fw-semibold text-white">$<%= b.finalAmount ? b.finalAmount.toFixed(2) : b.estimatedAmount.toFixed(2) %></td>
+                <td class="fw-semibold" style="color: var(--brand-slate);">$<%= b.finalAmount ? b.finalAmount.toFixed(2) : b.estimatedAmount.toFixed(2) %></td>
               </tr>
             <% } %>
           </tbody>

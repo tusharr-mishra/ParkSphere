@@ -1,57 +1,59 @@
 <% layout('layouts/boilerplate') %>
 
 <div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 pb-2 border-bottom">
     <div>
-      <h2 class="fw-bold mb-1">Operator Console</h2>
-      <p class="text-muted small mb-0">Live facility gate operations, active parked vehicles, and occupancy</p>
+      <h2 class="fw-bold mb-1" style="color: var(--brand-slate);">Operator Gate Console</h2>
+      <p class="text-secondary small mb-0">Live facility gate operations, active parked vehicles, and bay occupancy</p>
     </div>
-    <a href="/operator/slots" class="btn btn-warning btn-sm px-3 fw-semibold">
-      <i class="bi bi-grid-3x3-gap-fill me-1"></i> Slot Bay Controls
+    <a href="/operator/slots" class="btn btn-warning btn-sm px-3 fw-semibold text-dark">
+      <i class="fa-solid fa-square-parking me-1"></i> Slot Bay Controls
     </a>
   </div>
 
   <!-- Operational Metric Counters -->
   <div class="row g-4 mb-4">
     <div class="col-md-3">
-      <div class="card card-custom p-4">
-        <span class="text-muted small fw-semibold text-uppercase">Assigned Facilities</span>
-        <h2 class="fw-bold text-white mt-2 mb-0"><%= stats.totalFacilities %></h2>
+      <div class="card p-4 border shadow-sm" style="border-radius: 14px; background-color: #ffffff;">
+        <span class="text-secondary small fw-semibold text-uppercase">Assigned Facilities</span>
+        <h2 class="fw-bold mt-2 mb-0" style="color: var(--brand-slate);"><%= stats.totalFacilities %></h2>
       </div>
     </div>
     <div class="col-md-3">
-      <div class="card card-custom p-4">
-        <span class="text-muted small fw-semibold text-uppercase">Total Bays Managed</span>
-        <h2 class="fw-bold text-primary mt-2 mb-0"><%= stats.totalSlots %></h2>
+      <div class="card p-4 border shadow-sm" style="border-radius: 14px; background-color: #ffffff;">
+        <span class="text-secondary small fw-semibold text-uppercase">Total Bays Managed</span>
+        <h2 class="fw-bold mt-2 mb-0" style="color: var(--brand-blue);"><%= stats.totalSlots %></h2>
       </div>
     </div>
     <div class="col-md-3">
-      <div class="card card-custom p-4">
-        <span class="text-muted small fw-semibold text-uppercase">Active Parked Cars</span>
-        <h2 class="fw-bold text-warning mt-2 mb-0"><%= stats.activeReservationsCount %></h2>
+      <div class="card p-4 border shadow-sm" style="border-radius: 14px; background-color: #ffffff;">
+        <span class="text-secondary small fw-semibold text-uppercase">Active Parked Cars</span>
+        <h2 class="fw-bold mt-2 mb-0 text-warning"><%= stats.activeReservationsCount %></h2>
       </div>
     </div>
     <div class="col-md-3">
-      <div class="card card-custom p-4">
-        <span class="text-muted small fw-semibold text-uppercase">Today's Completed Stays</span>
-        <h2 class="fw-bold text-success mt-2 mb-0"><%= stats.todayCompleted %></h2>
+      <div class="card p-4 border shadow-sm" style="border-radius: 14px; background-color: #ffffff;">
+        <span class="text-secondary small fw-semibold text-uppercase">Today's Completed Stays</span>
+        <h2 class="fw-bold mt-2 mb-0" style="color: var(--brand-emerald);"><%= stats.todayCompleted %></h2>
       </div>
     </div>
   </div>
 
   <!-- Gate Operations Desk -->
-  <div class="card card-custom p-4 shadow">
-    <h5 class="fw-bold text-white mb-3"><i class="bi bi-shield-check text-primary me-2"></i>Live Gate Desk (Incoming & Active Vehicles)</h5>
+  <div class="card p-4 border shadow-sm" style="border-radius: 14px; background-color: #ffffff;">
+    <h5 class="fw-bold mb-3" style="color: var(--brand-slate);">
+      <i class="fa-solid fa-door-open text-primary me-2"></i>Live Gate Desk (Incoming & Active Vehicles)
+    </h5>
 
     <% if (activeBookings.length === 0) { %>
-      <div class="text-center py-4 text-muted small">
+      <div class="text-center py-4 text-secondary small">
         No active or incoming vehicle reservations currently.
       </div>
     <% } else { %>
       <div class="table-responsive">
-        <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
-          <thead>
-            <tr class="text-muted small">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr class="text-secondary small text-uppercase">
               <th>Booking Code</th>
               <th>Customer</th>
               <th>Facility</th>
@@ -64,10 +66,10 @@
           <tbody>
             <% for (let b of activeBookings) { %>
               <tr>
-                <td class="fw-bold text-primary"><%= b.bookingCode %></td>
+                <td class="fw-bold" style="color: var(--brand-emerald);"><%= b.bookingCode %></td>
                 <td><%= b.user ? b.user.name : 'Customer' %></td>
                 <td><%= b.facility ? b.facility.name : 'Facility' %></td>
-                <td><span class="badge bg-secondary">Bay <%= b.slot ? b.slot.slotNumber : 'N/A' %></span></td>
+                <td><span class="badge" style="background-color: #f1f5f9; color: #334155;">Bay <%= b.slot ? b.slot.slotNumber : 'N/A' %></span></td>
                 <td><strong><%= b.vehicle ? b.vehicle.registrationNumber : 'N/A' %></strong></td>
                 <td>
                   <span class="badge badge-status <%= b.status === 'CONFIRMED' ? 'badge-confirmed' : 'badge-active' %>">
@@ -77,14 +79,14 @@
                 <td>
                   <% if (b.status === 'CONFIRMED') { %>
                     <form action="/reservations/<%= b._id %>/check-in" method="POST" class="d-inline">
-                      <button type="submit" class="btn btn-success btn-sm py-1 px-2">
-                        Gate Check In
+                      <button type="submit" class="btn btn-success btn-sm py-1 px-3 fw-bold">
+                        <i class="fa-solid fa-right-to-bracket me-1"></i> Check In
                       </button>
                     </form>
                   <% } else if (b.status === 'ACTIVE') { %>
                     <form action="/reservations/<%= b._id %>/check-out" method="POST" class="d-inline">
-                      <button type="submit" class="btn btn-warning btn-sm py-1 px-2 fw-bold">
-                        Gate Check Out
+                      <button type="submit" class="btn btn-warning btn-sm py-1 px-3 fw-bold text-dark">
+                        <i class="fa-solid fa-right-from-bracket me-1"></i> Check Out
                       </button>
                     </form>
                   <% } %>
